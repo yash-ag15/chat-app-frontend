@@ -1,56 +1,89 @@
+import { useState } from "react";
 import Navbar from "../components/Navbar.jsx";
-import FriendList from "../components/FriendList.jsx";
-import FriendRequests from "../components/FriendRequests.jsx";
-import AddFriend from "../components/AddFriend.jsx";
+import ChatList from "../components/ChatList.jsx";
+import ChatView from "../components/ChatView.jsx";
 import ChatPlaceholder from "../components/ChatPlaceholder.jsx";
-
-// Dummy data
-const dummyFriends = [
-  { id: "1", username: "Alice", status: "online" },
-  { id: "2", username: "Bob", status: "offline" },
-  { id: "3", username: "Charlie", status: "online" },
-  { id: "4", username: "Diana", status: "offline" },
-];
-
-const dummyFriendRequests = [
-  { id: "req1", senderUsername: "Emma" },
-  { id: "req2", senderUsername: "Frank" },
-];
+import ProfileSidebar from "../components/ProfileSideBar.jsx";
 
 const Dashboard = () => {
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
-      <Navbar username="JohnDoe" onLogout={() => {}} />
-      
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <aside className="w-72 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            <FriendList
-              friends={dummyFriends}
-              selectedFriendId={null}
-              onSelectFriend={() => {}}
-            />
-            
-            <div className="border-t border-gray-200 pt-4">
-              <FriendRequests
-                requests={dummyFriendRequests}
-                onAccept={() => {}}
-                onReject={() => {}}
-              />
-            </div>
-            
-            <div className="border-t border-gray-200 pt-4">
-              <AddFriend />
-            </div>
-          </div>
-        </aside>
+    <div className="h-screen flex flex-col" style={{ backgroundColor: "hsl(0 0% 95%)" }}>
+      <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl"
+        style={{
+          backgroundColor: "hsl(0 0% 100%)",
+          boxShadow: "0 4px 16px hsl(0 0% 0% / 0.08)",
+        }}>
 
-        {/* Right Panel - Chat Area */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          <ChatPlaceholder />
-        </main>
+        {/* Profile Sidebar */}
+        {showProfile && (
+          <div className="absolute inset-0 z-20 md:relative md:w-[420px] md:border-r"
+            style={{ borderColor: "hsl(0 0% 92%)" }}>
+            <ProfileSidebar onClose={() => setShowProfile(false)} />
+          </div>
+        )}
+
+        {/* Left Panel */}
+        <div
+          className={`w-full md:w-[420px] flex flex-col border-r ${
+            selectedChat ? "hidden md:flex" : "flex"
+          } ${showProfile ? "hidden" : ""}`}
+          style={{ borderColor: "hsl(0 0% 92%)" }}
+        >
+          <Navbar title="ChatHub" isChat={false} />
+
+          {/* Search row */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b"
+            style={{ borderColor: "hsl(0 0% 94%)" }}>
+            <button onClick={() => setShowProfile(true)}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: "hsl(0 0% 85%)" }}>
+                <span className="font-medium text-sm" style={{ color: "hsl(0 0% 30%)" }}>J</span>
+              </div>
+            </button>
+            <input
+              type="text"
+              placeholder="Search or start new chat"
+              className="flex-1 px-4 py-2 rounded-xl text-sm outline-none transition-shadow duration-200"
+              style={{
+                backgroundColor: "hsl(0 0% 96%)",
+                color: "hsl(0 0% 10%)",
+                border: "1px solid transparent",
+              }}
+              onFocus={(e) => e.currentTarget.style.boxShadow = "0 0 0 2px hsl(0 0% 0% / 0.1)"}
+              onBlur={(e) => e.currentTarget.style.boxShadow = "none"}
+            />
+          </div>
+
+          <ChatList
+            onSelectChat={(chat) => setSelectedChat(chat)}
+            selectedChatId={selectedChat?.id}
+          />
+        </div>
+
+        {/* Right Panel */}
+        <div
+          className={`flex-1 flex flex-col ${
+            selectedChat ? "flex" : "hidden md:flex"
+          } ${showProfile ? "hidden md:flex" : ""}`}
+        >
+          {selectedChat ? (
+            <>
+              <Navbar
+                title={selectedChat.name}
+                subtitle={selectedChat.online ? "online" : "last seen recently"}
+                showBackButton={true}
+                onBackClick={() => setSelectedChat(null)}
+                isChat={true}
+              />
+              <ChatView />
+            </>
+          ) : (
+            <ChatPlaceholder />
+          )}
+        </div>
       </div>
     </div>
   );

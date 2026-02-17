@@ -1,1 +1,43 @@
 @import "tailwindcss";
+:root {
+  --app-bg: hsl(0 0% 95%);
+  --app-card: 0 0% 100%;
+  --app-text: 0 0% 10%;
+  --app-text-secondary: 0 0% 50%;
+  --app-border: 0 0% 90%;
+  --app-hover: 0 0% 96%;
+  --app-active: 0 0% 93%;
+  --app-accent: 0 0% 15%;
+  --app-accent-light: 0 0% 40%;
+  --app-bubble-sent: 0 0% 15%;
+  --app-bubble-received: 0 0% 100%;
+  --app-input-bg: 0 0% 96%;
+  --app-shadow: 0 1px 6px hsl(0 0% 0% / 0.06);
+  --app-shadow-lg: 0 4px 16px hsl(0 0% 0% / 0.08);
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: hsl(0 0% 95%);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(0 0% 80%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(0 0% 65%);
+}
