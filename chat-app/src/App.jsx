@@ -3,6 +3,7 @@ import Auth from './pages/Auth'
 import { Routes,Route } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Register from './components/Register'
+import Login from './components/Login'
 import Home from './pages/Home'
 
 const App = () => {
@@ -11,6 +12,7 @@ const App = () => {
     <Routes>
            <Route path="/" element={<Home/>} />
       <Route path="/auth" element={<Auth/>} />
+ 
    
 
       <Route path="/dashboard" element={<Dashboard/>} />

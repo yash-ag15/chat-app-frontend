@@ -34,7 +34,7 @@ const Auth = () => {
                     </p>
                 </div>
 
-                {/* Auth Form */}
+              
                 {isLogin ? <Login /> : <Register />}
 
             </div>
