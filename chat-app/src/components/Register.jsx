@@ -21,14 +21,14 @@ const Register = () => {
             const data = response.data;
 
             if (data === "User Successfully registered") {
-                navigate("/",{state:{mode:"login"}});
+                navigate("/", { state: { mode: "login" } });
 
             }
 
         }
         catch (error) {
             console.error(error);
-            alert("Server Error..");
+            alert("User already registered with Same mail..");
         }
     }
     return (
