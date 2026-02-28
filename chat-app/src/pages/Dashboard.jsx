@@ -5,31 +5,40 @@ import ChatView from "../components/ChatView.jsx";
 import ChatPlaceholder from "../components/ChatPlaceholder.jsx";
 import ProfileSidebar from "../components/ProfileSideBar.jsx";
 import axios from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
 
 
 const Dashboard = () => {
+    const navigate =useNavigate();
     const [user, setUser] = useState({});
     useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const url = "http://localhost:8080/api/users/me"; 
-      const token = localStorage.getItem("token");
+        const fetchUser = async () => {
+            try {
+                const url = "http://localhost:8080/api/users/me";
+                const token = localStorage.getItem("token");
 
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+                const response = await axios.get(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
-      setUser(response.data);
+                setUser(response.data);
 
-    } catch (error) {
-      console.error(error);
-    }
-  };
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    alert(error.response.data || "Session expired");
+                    localStorage.removeItem("token");
+                    navigate("/");
+                } else {
+                    console.error("Error fetching user:", error);
+                    alert("Failed to load user data");
+                }
+            }
+        };
 
-  fetchUser(); 
-}, []);
+        fetchUser();
+    }, []);
 
     const [selectedChat, setSelectedChat] = useState(null);
     const [showProfile, setShowProfile] = useState(false);
@@ -68,7 +77,7 @@ const Dashboard = () => {
                         <button onClick={() => setShowProfile(true)}>
                             <div className="w-10 h-10 rounded-full flex items-center justify-center"
                                 style={{ backgroundColor: "hsl(0 0% 85%)" }}>
-                                <span className="font-medium text-sm" style={{ color: "hsl(0 0% 30%)" }}>  {user?.userName?.charAt(0) }</span>
+                                <span className="font-medium text-sm" style={{ color: "hsl(0 0% 30%)" }}>  {user?.userName?.charAt(0)}</span>
                             </div>
                         </button>
                         <input
@@ -93,7 +102,7 @@ const Dashboard = () => {
 
                 {/* Right Panel */}
                 <div
-                    className={`flex-1 flex flex-col ${selectedChat ? "flex" : "hidden md:flex"
+                    className={`flex-1  flex flex-col ${selectedChat ? "flex" : "hidden md:flex"
                         } ${showProfile ? "hidden md:flex" : ""}`}
                 >
                     {selectedChat ? (

@@ -1,11 +1,12 @@
 import axios from "axios";
 import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingAbout, setIsEditingAbout] = useState(false);
-    const [editUsername, setEditUsername] = useState(user?.userName || "");
+    const [editUsername, setEditUsername] = useState(user?.userName ?? "");
     const [editAbout, setEditAbout] = useState(user?.about || "Hey there! I'm using ChatHub");
-
+const navigate =useNavigate()
     const handleSaveProfile = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -32,8 +33,14 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
                 }
             }
         } catch (error) {
-            console.error("Error updating profile:", error);
-            alert("Failed to update profile");
+            if (error.response?.status === 401) {
+                alert(error.response.data || "Session expired");
+                localStorage.removeItem("token");
+                navigate("/");
+            } else {
+                console.error("Error updating profile:", error);
+                alert("Failed to update profile");
+            }
         }
     };
 

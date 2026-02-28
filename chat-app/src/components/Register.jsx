@@ -21,14 +21,16 @@ const Register = () => {
             const data = response.data;
 
             if (data === "User Successfully registered") {
-                navigate("/", { state: { mode: "login" } });
-
+                navigate("/");
             }
-
-        }
-        catch (error) {
-            console.error(error);
-            alert("User already registered with Same mail..");
+        } catch (error) {
+            console.error("Registration error:", error);
+            if (error.response?.status === 401) {
+                alert(error.response.data || "Session expired");
+                localStorage.removeItem("token");
+            } else {
+                alert("User already registered with same email");
+            }
         }
     }
     return (

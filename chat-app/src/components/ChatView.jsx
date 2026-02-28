@@ -39,16 +39,16 @@ const ChatView = () => {
               style={{
                 ...(msg.sender === "me"
                   ? {
-                      backgroundColor: "hsl(0 0% 12%)",
-                      color: "white",
-                      borderBottomRightRadius: "6px",
-                      boxShadow: "0 1px 4px hsl(0 0% 0% / 0.1)",
-                    }
+                    backgroundColor: "hsl(0 0% 12%)",
+                    color: "white",
+                    borderBottomRightRadius: "6px",
+                    boxShadow: "0 1px 4px hsl(0 0% 0% / 0.1)",
+                  }
                   : {
-                      backgroundColor: "hsl(0 0% 100%)",
-                      borderBottomLeftRadius: "6px",
-                      boxShadow: "0 1px 4px hsl(0 0% 0% / 0.06)",
-                    }),
+                    backgroundColor: "hsl(0 0% 100%)",
+                    borderBottomLeftRadius: "6px",
+                    boxShadow: "0 1px 4px hsl(0 0% 0% / 0.06)",
+                  }),
               }}
             >
               <p className="text-sm leading-relaxed"

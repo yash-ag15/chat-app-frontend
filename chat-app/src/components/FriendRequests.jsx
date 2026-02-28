@@ -1,15 +1,39 @@
-import { useState } from "react";
-
-const incomingRequests = [
-  { id: "r1", name: "Sarah", message: "Hey, let's connect!" },
-  { id: "r2", name: "Mike", message: "We met at the conference" },
-  { id: "r3", name: "Luna", message: "Friend of Alice" },
-];
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const FriendRequests = ({ onClose }) => {
-  const [requests, setRequests] = useState(incomingRequests);
+  const [requests, setRequests] = useState([]);
   const [searchUser, setSearchUser] = useState("");
   const [sentRequests, setSentRequests] = useState([]);
+  const navigate =useNavigate();
+
+  useEffect(() => {
+    const fetchAllRequest = async () => {
+      try {
+        const url = "http://localhost:8080/friends/requests";
+        const token = localStorage.getItem("token");
+        const response = await axios.get(url,
+          {
+            headers:
+            {
+              Authorization: `Bearer ${token}`
+            }
+          })
+        setRequests(response.data)
+      }
+      catch (error) {
+        if (error.response?.status === 401) {
+          alert(error.response.data || "Session expired");
+          localStorage.removeItem("token");
+          navigate("/");
+        } else {
+          console.error("Error fetching friend requests:", error);
+        }
+      }
+    }
+    fetchAllRequest();
+  }, []);
 
   const handleAccept = (id) => {
     setRequests((prev) => prev.filter((r) => r.id !== id));
@@ -110,27 +134,26 @@ const FriendRequests = ({ onClose }) => {
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {requests.map((req) => (
-              <div key={req.id} className="flex items-center gap-3 p-2 rounded-lg"
+              <div key={req.requestId} className="flex items-center gap-3 p-2 rounded-lg"
                 style={{ backgroundColor: "hsl(0 0% 97%)" }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: "hsl(0 0% 85%)" }}>
                   <span className="text-sm font-medium" style={{ color: "hsl(0 0% 30%)" }}>
-                    {req.name.charAt(0)}
+                    {req.senderName.charAt(0)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium" style={{ color: "hsl(0 0% 10%)" }}>{req.name}</p>
-                  <p className="text-xs truncate" style={{ color: "hsl(0 0% 55%)" }}>{req.message}</p>
+                  <p className="text-sm font-medium" style={{ color: "hsl(0 0% 10%)" }}>{req.senderName}</p>
                 </div>
                 <div className="flex gap-1.5 flex-shrink-0">
-                  <button onClick={() => handleAccept(req.id)}
+                  <button onClick={() => handleAccept(req.requestId)}
                     className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-200"
                     style={{ backgroundColor: "hsl(0 0% 12%)", color: "white" }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "hsl(0 0% 25%)"}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "hsl(0 0% 12%)"}>
                     Accept
                   </button>
-                  <button onClick={() => handleDecline(req.id)}
+                  <button onClick={() => handleDecline(req.requestId)}
                     className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-200"
                     style={{
                       backgroundColor: "hsl(0 0% 94%)",
