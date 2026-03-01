@@ -5,8 +5,15 @@ import { Navigate, useNavigate } from "react-router-dom";
 const FriendRequests = ({ onClose }) => {
   const [requests, setRequests] = useState([]);
   const [searchUser, setSearchUser] = useState("");
-  const [sentRequests, setSentRequests] = useState([]);
+  const [sentRequests, setSentRequests] = useState(() => {
+    const saved = localStorage.getItem("sentRequests");
+    return saved ? JSON.parse(saved) : [];
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    localStorage.setItem("sentRequests", JSON.stringify(sentRequests));
+  }, [sentRequests]);
 
   useEffect(() => {
     const fetchAllRequest = async () => {
@@ -37,7 +44,7 @@ const FriendRequests = ({ onClose }) => {
   }, []);
 
 
-  const handleAccept = async (requestId) => {
+  const handleAccept = async (requestId, senderName) => {
     try {
       const url = `http://localhost:8080/friends/request/accept/${requestId}`;
       const token = localStorage.getItem("token");
@@ -54,6 +61,7 @@ const FriendRequests = ({ onClose }) => {
 
       if (response.status === 200) {
         setRequests(prev => prev.filter(r => r.requestId !== requestId));
+        setSentRequests(prev => prev.filter(name => name !== senderName));
         alert(response.data);
       }
 
@@ -63,12 +71,12 @@ const FriendRequests = ({ onClose }) => {
         localStorage.removeItem("token");
         navigate("/");
       } else {
-        alert(error);
+        alert(error.response.data);
       }
     }
   };
 
-  const handleDecline = async (requestId) => {
+  const handleDecline = async (requestId, senderName) => {
     try {
       const url = `http://localhost:8080/friends/request/reject/${requestId}`;
       const token = localStorage.getItem("token");
@@ -85,6 +93,7 @@ const FriendRequests = ({ onClose }) => {
 
       if (response.status === 200) {
         setRequests(prev => prev.filter(r => r.requestId !== requestId));
+        setSentRequests(prev => prev.filter(name => name !== senderName));
         alert(response.data);
       }
 
@@ -94,18 +103,43 @@ const FriendRequests = ({ onClose }) => {
         localStorage.removeItem("token");
         navigate("/");
       } else {
-        alert(error);
+        alert(error.response.data);
       }
     }
   };
 
-  const handleSendRequest =async () => {
-    
+  const handleSendRequest = async () => {
+    try {
+      const url = `http://localhost:8080/friends/requests/${searchUser}`;
+      const token = localStorage.getItem("token");
+      const response = await axios.post(url,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+      if (response.status == 200) {
+        if (searchUser.trim() && !sentRequests.includes(searchUser.trim())) {
+          setSentRequests((prev) => [...prev, searchUser.trim()]);
+          setSearchUser("");
+        }
+        alert(response.data)
 
-    if (searchUser.trim() && !sentRequests.includes(searchUser.trim())) {
-      setSentRequests((prev) => [...prev, searchUser.trim()]);
-      setSearchUser("");
+      }
     }
+    catch (error) {
+      if (error.response?.status === 401) {
+        alert(error.response.data || "Session expired");
+        localStorage.removeItem("token");
+        navigate("/");
+      } else {
+        alert(error.response.data);
+      }
+    }
+
+
   };
 
   return (
@@ -204,14 +238,14 @@ const FriendRequests = ({ onClose }) => {
                   <p className="text-sm font-medium" style={{ color: "hsl(0 0% 10%)" }}>{req.senderName}</p>
                 </div>
                 <div className="flex gap-1.5 flex-shrink-0">
-                  <button onClick={() => handleAccept(req.requestId)}
+                  <button onClick={() => handleAccept(req.requestId, req.senderName)}
                     className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-200"
                     style={{ backgroundColor: "hsl(0 0% 12%)", color: "white" }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "hsl(0 0% 25%)"}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "hsl(0 0% 12%)"}>
                     Accept
                   </button>
-                  <button onClick={() => handleDecline(req.requestId)}
+                  <button onClick={() => handleDecline(req.requestId, req.senderName)}
                     className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-200"
                     style={{
                       backgroundColor: "hsl(0 0% 94%)",
