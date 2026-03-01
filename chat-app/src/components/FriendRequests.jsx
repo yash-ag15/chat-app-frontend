@@ -6,7 +6,7 @@ const FriendRequests = ({ onClose }) => {
   const [requests, setRequests] = useState([]);
   const [searchUser, setSearchUser] = useState("");
   const [sentRequests, setSentRequests] = useState([]);
-  const navigate =useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAllRequest = async () => {
@@ -14,6 +14,7 @@ const FriendRequests = ({ onClose }) => {
         const url = "http://localhost:8080/friends/requests";
         const token = localStorage.getItem("token");
         const response = await axios.get(url,
+
           {
             headers:
             {
@@ -35,15 +36,72 @@ const FriendRequests = ({ onClose }) => {
     fetchAllRequest();
   }, []);
 
-  const handleAccept = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+
+  const handleAccept = async (requestId) => {
+    try {
+      const url = `http://localhost:8080/friends/request/accept/${requestId}`;
+      const token = localStorage.getItem("token");
+
+      const response = await axios.put(
+        url,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        setRequests(prev => prev.filter(r => r.requestId !== requestId));
+        alert(response.data);
+      }
+
+    } catch (error) {
+      if (error.response?.status === 401) {
+        alert(error.response.data || "Session expired");
+        localStorage.removeItem("token");
+        navigate("/");
+      } else {
+        alert(error);
+      }
+    }
   };
 
-  const handleDecline = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+  const handleDecline = async (requestId) => {
+    try {
+      const url = `http://localhost:8080/friends/request/reject/${requestId}`;
+      const token = localStorage.getItem("token");
+
+      const response = await axios.put(
+        url,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        setRequests(prev => prev.filter(r => r.requestId !== requestId));
+        alert(response.data);
+      }
+
+    } catch (error) {
+      if (error.response?.status === 401) {
+        alert(error.response.data || "Session expired");
+        localStorage.removeItem("token");
+        navigate("/");
+      } else {
+        alert(error);
+      }
+    }
   };
 
-  const handleSendRequest = () => {
+  const handleSendRequest =async () => {
+    
+
     if (searchUser.trim() && !sentRequests.includes(searchUser.trim())) {
       setSentRequests((prev) => [...prev, searchUser.trim()]);
       setSearchUser("");
