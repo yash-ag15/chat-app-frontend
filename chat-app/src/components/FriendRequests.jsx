@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const FriendRequests = ({ onClose }) => {
   const [requests, setRequests] = useState([]);
@@ -32,11 +33,12 @@ const FriendRequests = ({ onClose }) => {
       }
       catch (error) {
         if (error.response?.status === 401) {
-          alert(error.response.data || "Session expired");
+          toast.error(error.response.data || "Session expired");
           localStorage.removeItem("token");
           navigate("/");
         } else {
           console.error("Error fetching friend requests:", error);
+          toast.error("Failed to load friend requests");
         }
       }
     }
@@ -62,16 +64,16 @@ const FriendRequests = ({ onClose }) => {
       if (response.status === 200) {
         setRequests(prev => prev.filter(r => r.requestId !== requestId));
         setSentRequests(prev => prev.filter(name => name !== senderName));
-        alert(response.data);
+        toast.success(response.data);
       }
 
     } catch (error) {
       if (error.response?.status === 401) {
-        alert(error.response.data || "Session expired");
+        toast.error(error.response.data || "Session expired");
         localStorage.removeItem("token");
         navigate("/");
       } else {
-        alert(error.response.data);
+        toast.error(error.response.data || "Failed to accept request");
       }
     }
   };
@@ -94,16 +96,16 @@ const FriendRequests = ({ onClose }) => {
       if (response.status === 200) {
         setRequests(prev => prev.filter(r => r.requestId !== requestId));
         setSentRequests(prev => prev.filter(name => name !== senderName));
-        alert(response.data);
+        toast.success(response.data);
       }
 
     } catch (error) {
       if (error.response?.status === 401) {
-        alert(error.response.data || "Session expired");
+        toast.error(error.response.data || "Session expired");
         localStorage.removeItem("token");
         navigate("/");
       } else {
-        alert(error.response.data);
+        toast.error(error.response.data || "Failed to decline request");
       }
     }
   };
@@ -125,21 +127,19 @@ const FriendRequests = ({ onClose }) => {
           setSentRequests((prev) => [...prev, searchUser.trim()]);
           setSearchUser("");
         }
-        alert(response.data)
-
+        toast.success(response.data);
+       
       }
     }
     catch (error) {
       if (error.response?.status === 401) {
-        alert(error.response.data || "Session expired");
+        toast.error(error.response.data || "Session expired");
         localStorage.removeItem("token");
         navigate("/");
       } else {
-        alert(error.response.data);
+        toast.error(error.response.data || "Failed to send request");
       }
     }
-
-
   };
 
   return (
@@ -228,7 +228,7 @@ const FriendRequests = ({ onClose }) => {
             {requests.map((req) => (
               <div key={req.requestId} className="flex items-center gap-3 p-2 rounded-lg"
                 style={{ backgroundColor: "hsl(0 0% 97%)" }}>
-                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                   style={{ backgroundColor: "hsl(0 0% 85%)" }}>
                   <span className="text-sm font-medium" style={{ color: "hsl(0 0% 30%)" }}>
                     {req.senderName.charAt(0)}
@@ -237,7 +237,7 @@ const FriendRequests = ({ onClose }) => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium" style={{ color: "hsl(0 0% 10%)" }}>{req.senderName}</p>
                 </div>
-                <div className="flex gap-1.5 flex-shrink-0">
+                <div className="flex gap-1.5 shrink-0">
                   <button onClick={() => handleAccept(req.requestId, req.senderName)}
                     className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors duration-200"
                     style={{ backgroundColor: "hsl(0 0% 12%)", color: "white" }}

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const Login = () => {
     const url = "http://localhost:8080/auth/login";
@@ -13,7 +14,7 @@ const Login = () => {
         e.preventDefault();
 
         if (!email || !password) {
-            alert("Email and password required");
+            toast.warning("Email and password required");
             return;
         }
 
@@ -22,14 +23,15 @@ const Login = () => {
             const data = response.data;
 
             if (data === "Failed") {
-                alert("Invalid email or password");
+                toast.error("Invalid email or password");
             } else {
+                toast.success("Login successful!");
                 localStorage.setItem("token", data); // JWT string
                 navigate("/dashboard");
             }
         } catch (error) {
             console.error(error);
-            alert("Enter Valid Credential.");
+            toast.error("Login failed. Please check your credentials.");
         }
     };
 

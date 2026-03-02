@@ -5,10 +5,13 @@ import Dashboard from './pages/Dashboard'
 import Register from './components/Register'
 import Login from './components/Login'
 import Home from './pages/Home'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const App = () => {
   return (
     <div className='bg-red-400'>
+    <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
     <Routes>
            <Route path="/" element={<Home/>} />
       <Route path="/auth" element={<Auth/>} />

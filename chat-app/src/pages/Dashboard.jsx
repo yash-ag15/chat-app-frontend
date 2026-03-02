@@ -6,6 +6,7 @@ import ChatPlaceholder from "../components/ChatPlaceholder.jsx";
 import ProfileSidebar from "../components/ProfileSideBar.jsx";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 
 const Dashboard = () => {
@@ -27,12 +28,12 @@ const Dashboard = () => {
 
             } catch (error) {
                 if (error.response?.status === 401) {
-                    alert(error.response.data || "Session expired");
+                    toast.error(error.response.data || "Session expired");
                     localStorage.removeItem("token");
                     navigate("/");
                 } else {
                     console.error("Error fetching user:", error);
-                    alert("Failed to load user data");
+                    toast.error("Failed to load user data");
                 }
             }
         };

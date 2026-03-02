@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingAbout, setIsEditingAbout] = useState(false);
@@ -34,12 +35,12 @@ const navigate =useNavigate()
             }
         } catch (error) {
             if (error.response?.status === 401) {
-                alert(error.response.data || "Session expired");
+                toast.error(error.response.data || "Session expired");
                 localStorage.removeItem("token");
                 navigate("/");
             } else {
                 console.error("Error updating profile:", error);
-                alert("Failed to update profile");
+                toast.error("Failed to update profile");
             }
         }
     };

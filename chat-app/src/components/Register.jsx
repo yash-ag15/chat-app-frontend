@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { toast } from "react-toastify";
 const Register = () => {
     const url = "http://localhost:8080/auth/register";
 
@@ -12,7 +13,7 @@ const Register = () => {
     const onResgiterSubmit = async (e) => {
         e.preventDefault();
         if (!email || !password || !username) {
-            alert("Please Fill All the Details");
+            toast.warning("Please Fill All the Details");
             return;
         }
         try {
@@ -26,10 +27,10 @@ const Register = () => {
         } catch (error) {
             console.error("Registration error:", error);
             if (error.response?.status === 401) {
-                alert(error.response.data || "Session expired");
+                toast.error(error.response.data || "Session expired");
                 localStorage.removeItem("token");
             } else {
-                alert("User already registered with same email");
+                toast.error("User already registered with same email");
             }
         }
     }
