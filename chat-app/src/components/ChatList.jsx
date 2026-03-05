@@ -9,11 +9,6 @@ const chats = [
     { id: "8", name: "Study Group", lastMessage: "You: Notes uploaded", time: "Sunday", online: false },
 ];
 
-const avatarShades = [
-    "hsl(0 0% 82%)", "hsl(0 0% 78%)", "hsl(0 0% 84%)", "hsl(0 0% 76%)",
-    "hsl(0 0% 80%)", "hsl(0 0% 86%)", "hsl(0 0% 74%)", "hsl(0 0% 88%)",
-];
-
 const ChatList = ({ onSelectChat, selectedChatId }) => {
     return (
         <div className="flex-1 overflow-y-auto">
@@ -22,43 +17,34 @@ const ChatList = ({ onSelectChat, selectedChatId }) => {
                     <button
                         key={chat.id}
                         onClick={() => onSelectChat?.(chat)}
-                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200"
-                        style={{
-                            background: selectedChatId === chat.id ? "hsl(0 0% 94%)" : "transparent",
-                        }}
-                        onMouseEnter={(e) => {
-                            if (selectedChatId !== chat.id) e.currentTarget.style.background = "hsl(0 0% 96%)";
-                        }}
-                        onMouseLeave={(e) => {
-                            if (selectedChatId !== chat.id) e.currentTarget.style.background = "transparent";
-                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
+                            selectedChatId === chat.id ? "bg-gray-100" : "hover:bg-gray-50"
+                        }`}
                     >
                         {/* Avatar */}
-                        <div className="relative flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center"
-                                style={{ backgroundColor: avatarShades[index % avatarShades.length] }}>
-                                <span className="text-lg font-medium" style={{ color: "hsl(0 0% 30%)" }}>
+                        <div className="relative shrink-0">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-300">
+                                <span className="text-lg font-medium text-gray-700">
                                     {chat.name.charAt(0).toUpperCase()}
                                 </span>
                             </div>
                             {chat.online && (
-                                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white"
-                                    style={{ backgroundColor: "hsl(142 70% 49%)" }} />
+                                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white bg-green-500" />
                             )}
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 min-w-0 text-left py-1">
                             <div className="flex justify-between items-baseline">
-                                <h4 className="text-sm font-semibold truncate" style={{ color: "hsl(0 0% 10%)" }}>
+                                <h4 className="text-sm font-semibold truncate text-gray-900">
                                     {chat.name}
                                 </h4>
-                                <span className="text-xs flex-shrink-0 ml-2" style={{ color: "hsl(0 0% 55%)" }}>
+                                <span className="text-xs shrink-0 ml-2 text-gray-600">
                                     {chat.time}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mt-0.5">
-                                <p className="text-sm truncate" style={{ color: "hsl(0 0% 55%)" }}>
+                                <p className="text-sm truncate text-gray-600">
                                     {chat.lastMessage}
                                 </p>
                             </div>

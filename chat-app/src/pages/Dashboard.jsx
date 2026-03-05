@@ -49,49 +49,34 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="h-screen flex flex-col" style={{ backgroundColor: "hsl(0 0% 95%)" }}>
-            <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl"
-                style={{
-                    backgroundColor: "hsl(0 0% 100%)",
-                    boxShadow: "0 4px 16px hsl(0 0% 0% / 0.08)",
-                }}>
+        <div className="h-screen flex flex-col bg-gray-50">
+            <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl bg-white shadow-lg">
 
                 {/* Profile Sidebar */}
                 {showProfile && (
-                    <div className="absolute inset-0 z-20 md:relative md:w-[420px] md:border-r"
-                        style={{ borderColor: "hsl(0 0% 92%)" }}>
+                    <div className="absolute inset-0 z-20 md:relative md:w-[420px] md:border-r md:border-gray-200">
                         <ProfileSidebar user={user} onClose={() => setShowProfile(false)} onUserUpdate={handleUserUpdate} />
                     </div>
                 )}
 
                 {/* Left Panel */}
                 <div
-                    className={`w-full md:w-[420px] flex flex-col border-r ${selectedChat ? "hidden md:flex" : "flex"
+                    className={`w-full md:w-[420px] flex flex-col border-r border-gray-200 ${selectedChat ? "hidden md:flex" : "flex"
                         } ${showProfile ? "hidden" : ""}`}
-                    style={{ borderColor: "hsl(0 0% 92%)" }}
                 >
                     <Navbar title="ChatHub" isChat={false} />
 
                     {/* Search row */}
-                    <div className="flex items-center gap-3 px-4 py-3 border-b"
-                        style={{ borderColor: "hsl(0 0% 94%)" }}>
+                    <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-300">
                         <button onClick={() => setShowProfile(true)}>
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center"
-                                style={{ backgroundColor: "hsl(0 0% 85%)" }}>
-                                <span className="font-medium text-sm" style={{ color: "hsl(0 0% 30%)" }}>  {user?.userName?.charAt(0)}</span>
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300">
+                                <span className="font-medium text-sm text-gray-700">  {user?.userName?.charAt(0)}</span>
                             </div>
                         </button>
                         <input
                             type="text"
                             placeholder="Search or start new chat"
-                            className="flex-1 px-4 py-2 rounded-xl text-sm outline-none transition-shadow duration-200"
-                            style={{
-                                backgroundColor: "hsl(0 0% 96%)",
-                                color: "hsl(0 0% 10%)",
-                                border: "1px solid transparent",
-                            }}
-                            onFocus={(e) => e.currentTarget.style.boxShadow = "0 0 0 2px hsl(0 0% 0% / 0.1)"}
-                            onBlur={(e) => e.currentTarget.style.boxShadow = "none"}
+                            className="flex-1 px-4 py-2 rounded-xl text-sm outline-none transition-shadow duration-200 bg-gray-100 text-gray-900 border border-transparent focus:ring-2 focus:ring-gray-300"
                         />
                     </div>
 
