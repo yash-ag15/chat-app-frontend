@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 
 
 const Dashboard = () => {
-    const navigate =useNavigate();
+    const navigate = useNavigate();
     const [user, setUser] = useState({});
     useEffect(() => {
         const fetchUser = async () => {
@@ -39,6 +39,37 @@ const Dashboard = () => {
         };
 
         fetchUser();
+    }, []);
+    const [chats, setChats] = useState([]);
+
+    useEffect(() => {
+
+        const fetchTotalChats = async () => {
+
+            try {
+                const url = "http://localhost:8080/chats";
+                const token = localStorage.getItem("token");
+
+                const response = await axios.get(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setChats(response.data);
+            }
+            catch (error) {
+                if (error.response?.status === 401) {
+                    toast.error(error.response.data || "Session expired");
+                    localStorage.removeItem("token");
+                    navigate("/");
+                } else {
+
+                    toast.error(error.response.data);
+                }
+            }
+
+        }
+        fetchTotalChats()
     }, []);
 
     const [selectedChat, setSelectedChat] = useState(null);
@@ -83,6 +114,7 @@ const Dashboard = () => {
                     <ChatList
                         onSelectChat={(chat) => setSelectedChat(chat)}
                         selectedChatId={selectedChat?.id}
+                        chats={chats}
                     />
                 </div>
 
@@ -94,13 +126,13 @@ const Dashboard = () => {
                     {selectedChat ? (
                         <>
                             <Navbar
-                                title={selectedChat.name}
+                                title={selectedChat.chatName}
                                 subtitle={selectedChat.online ? "online" : "last seen recently"}
                                 showBackButton={true}
                                 onBackClick={() => setSelectedChat(null)}
                                 isChat={true}
                             />
-                            <ChatView />
+                            <ChatView currUser={user.userName} selectedChat={selectedChat}  />
                         </>
                     ) : (
                         <ChatPlaceholder />
