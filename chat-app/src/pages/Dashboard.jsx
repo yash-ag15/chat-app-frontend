@@ -7,15 +7,16 @@ import ProfileSidebar from "../components/ProfileSideBar.jsx";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import { ENV } from "../../../config.js";
 
 const Dashboard = () => {
+    const [search, setSearch] = useState("");
     const navigate = useNavigate();
     const [user, setUser] = useState({});
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const url = "http://localhost:8080/api/users/me";
+                const url = ENV.api_url + "/api/users/me";
                 const token = localStorage.getItem("token");
 
                 const response = await axios.get(url, {
@@ -72,8 +73,63 @@ const Dashboard = () => {
         fetchTotalChats()
     }, []);
 
+useEffect(() => {
+    const searchTotalChats = async () => {
+      if(!search || search.trim() === ""){
+const fetchTotalChats = async () => {
+
+            try {
+                const url = "http://localhost:8080/chats";
+                const token = localStorage.getItem("token");
+
+                const response = await axios.get(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setChats(response.data);
+            }
+            catch (error) {
+                if (error.response?.status === 401) {
+                    toast.error(error.response.data || "Session expired");
+                    localStorage.removeItem("token");
+                    navigate("/");
+                } else {
+
+                    toast.error(error.response.data);
+                }
+            }
+
+        }
+        fetchTotalChats()
+ 
+      }
+        try {
+            const url = `http://localhost:8080/friends/search?prefix=${search}`;
+            const token = localStorage.getItem("token");
+               const response = await axios.get(url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                setChats(response.data)
+        }
+        catch(error){
+            if (error.response?.status === 401) {
+                toast.error(error.response.data || "Session expired");
+                localStorage.removeItem("token");
+                navigate("/");
+            } else {
+                toast.error(error.response.data);
+            }
+        }
+    };
+    searchTotalChats();
+}, [search]);
+
     const [selectedChat, setSelectedChat] = useState(null);
     const [showProfile, setShowProfile] = useState(false);
+
 
     const handleUserUpdate = (updatedUser) => {
         setUser(updatedUser);
@@ -105,6 +161,11 @@ const Dashboard = () => {
                             </div>
                         </button>
                         <input
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value)
+
+                            }}
                             type="text"
                             placeholder="Search or start new chat"
                             className="flex-1 px-4 py-2 rounded-xl text-sm outline-none transition-shadow duration-200 bg-gray-100 text-gray-900 border border-transparent focus:ring-2 focus:ring-gray-300"
@@ -132,7 +193,7 @@ const Dashboard = () => {
                                 onBackClick={() => setSelectedChat(null)}
                                 isChat={true}
                             />
-                            <ChatView currUser={user.userName} selectedChat={selectedChat}  />
+                            <ChatView currUser={user.userName} selectedChat={selectedChat} />
                         </>
                     ) : (
                         <ChatPlaceholder />
