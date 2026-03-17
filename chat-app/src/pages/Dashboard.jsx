@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Navbar from "../components/Navbar.jsx";
 import ChatList from "../components/ChatList.jsx";
 import ChatView from "../components/ChatView.jsx";
 import ChatPlaceholder from "../components/ChatPlaceholder.jsx";
 import ProfileSidebar from "../components/ProfileSideBar.jsx";
+import GroupChatCreator from "../components/GroupChatCreator.jsx";
 import axios from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ENV } from "../../../config.js";
 
@@ -13,6 +14,34 @@ const Dashboard = () => {
     const [search, setSearch] = useState("");
     const navigate = useNavigate();
     const [user, setUser] = useState({});
+    const [chats, setChats] = useState([]);
+    const [selectedChat, setSelectedChat] = useState(null);
+    const [showProfile, setShowProfile] = useState(false);
+
+    const loadChats = useCallback(async () => {
+        try {
+            const url = `${ENV.api_url}/chats`;
+            const token = localStorage.getItem("token");
+
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            setChats(response.data);
+        }
+        catch (error) {
+            if (error.response?.status === 401) {
+                toast.error(error.response.data || "Session expired");
+                localStorage.removeItem("token");
+                navigate("/");
+            } else {
+                toast.error(error.response?.data || "Failed to load chats");
+            }
+        }
+    }, [navigate]);
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -40,72 +69,20 @@ const Dashboard = () => {
         };
 
         fetchUser();
-    }, []);
-    const [chats, setChats] = useState([]);
+    }, [navigate]);
 
     useEffect(() => {
-
-        const fetchTotalChats = async () => {
-
-            try {
-                const url = "http://localhost:8080/chats";
-                const token = localStorage.getItem("token");
-
-                const response = await axios.get(url, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setChats(response.data);
-            }
-            catch (error) {
-                if (error.response?.status === 401) {
-                    toast.error(error.response.data || "Session expired");
-                    localStorage.removeItem("token");
-                    navigate("/");
-                } else {
-
-                    toast.error(error.response.data);
-                }
-            }
-
-        }
-        fetchTotalChats()
-    }, []);
+        loadChats();
+    }, [loadChats]);
 
 useEffect(() => {
     const searchTotalChats = async () => {
       if(!search || search.trim() === ""){
-const fetchTotalChats = async () => {
-
-            try {
-                const url = "http://localhost:8080/chats";
-                const token = localStorage.getItem("token");
-
-                const response = await axios.get(url, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                setChats(response.data);
-            }
-            catch (error) {
-                if (error.response?.status === 401) {
-                    toast.error(error.response.data || "Session expired");
-                    localStorage.removeItem("token");
-                    navigate("/");
-                } else {
-
-                    toast.error(error.response.data);
-                }
-            }
-
-        }
-        fetchTotalChats()
- 
+        loadChats();
+        return;
       }
         try {
-            const url = `http://localhost:8080/friends/search?prefix=${search}`;
+            const url = `${ENV.api_url}/friends/search?prefix=${search}`;
             const token = localStorage.getItem("token");
                const response = await axios.get(url, {
                     headers: {
@@ -120,15 +97,12 @@ const fetchTotalChats = async () => {
                 localStorage.removeItem("token");
                 navigate("/");
             } else {
-                toast.error(error.response.data);
+                toast.error(error.response?.data || "Failed to search chats");
             }
         }
     };
     searchTotalChats();
-}, [search]);
-
-    const [selectedChat, setSelectedChat] = useState(null);
-    const [showProfile, setShowProfile] = useState(false);
+}, [loadChats, navigate, search]);
 
 
     const handleUserUpdate = (updatedUser) => {
@@ -172,9 +146,18 @@ const fetchTotalChats = async () => {
                         />
                     </div>
 
+                    <GroupChatCreator
+                        onGroupCreated={(newGroupChat) => {
+                            loadChats();
+                            if (newGroupChat?.chatId) {
+                                setSelectedChat(newGroupChat);
+                            }
+                        }}
+                    />
+
                     <ChatList
                         onSelectChat={(chat) => setSelectedChat(chat)}
-                        selectedChatId={selectedChat?.id}
+                        selectedChatId={selectedChat?.chatId}
                         chats={chats}
                     />
                 </div>

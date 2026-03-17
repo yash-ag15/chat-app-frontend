@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import ChatMessageInput from "./ChatMessageInput";
+import GroupMembersManager from "./GroupMembersManager";
 import { connectWebSocket, subscribeToChat } from "../services/webscoket";
 
 const formatTime = (time) => {
@@ -16,6 +17,7 @@ const formatTime = (time) => {
 
 const ChatView = ({ currUser, selectedChat }) => {
 
+  const isGroup = selectedChat?.isGroup;
   const [messages, setMessages] = useState([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -142,6 +144,8 @@ const ChatView = ({ currUser, selectedChat }) => {
 
   <div className="flex-1 flex flex-col min-h-0">
 
+    <GroupMembersManager selectedChat={selectedChat} />
+
     <div
       ref={containerRef}
       onScroll={handleScroll}
@@ -152,6 +156,8 @@ const ChatView = ({ currUser, selectedChat }) => {
 
         const isMe = msg.senderName === currUser;
 
+const isGroup = selectedChat?.isGroup;
+const showSender = isGroup && !isMe;
         return (
 
           <div
@@ -166,7 +172,11 @@ const ChatView = ({ currUser, selectedChat }) => {
                   : "bg-white text-gray-900"
               }`}
             >
-
+ {showSender &&  (
+                <p className="text-xs opacity-70">
+                  {msg.senderName}
+                </p>
+              )}
               <p className="text-sm">
                 {msg.content}
               </p>
