@@ -26,16 +26,27 @@ const ChatView = ({ currUser, selectedChat }) => {
   const bottomRef = useRef(null);
   const shouldScrollOnLoadRef = useRef(false);
 
- const scrollToBottom = () => {
-  const container = containerRef.current;
+  const scrollToBottom = () => {
+    const container = containerRef.current;
 
-  if (container) {
-    container.scrollTop = container.scrollHeight;
-    return;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const [showNewMessage, setShowNewMessage] = useState(false);
+
+  const isBottomVisible = () => {
+    const container = containerRef.current;
+
+    if (!container) return true;
+
+  return (container.scrollTop + container.clientHeight >=
+    container.scrollHeight - 100);
   }
-
-  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-};
 
   const fetchMessages = async (pageNumber) => {
 
@@ -68,7 +79,7 @@ const ChatView = ({ currUser, selectedChat }) => {
         return;
       }
 
-      // older messages added at top
+
       setMessages(prev => [...orderedMessages, ...prev]);
 
     } catch (error) {
@@ -118,6 +129,10 @@ const ChatView = ({ currUser, selectedChat }) => {
 
     }
 
+    if (isBottomVisible()) {
+      setShowNewMessage(false);
+    }
+
   };
 
   // websocket messages
@@ -129,10 +144,26 @@ const ChatView = ({ currUser, selectedChat }) => {
 
       subscribeToChat(selectedChat.chatId, (message) => {
 
-        setMessages(prev => [...prev, message]);
-         setTimeout(() => {
-    scrollToBottom();
-  }, 0);
+        setMessages(prev => {
+
+          const exists = prev.some(m => m.messageId === message.messageId);
+          if (exists) return prev;
+
+          return [...prev, message];
+        });
+
+        const isMe = message.senderName === currUser;
+
+        if (isMe) {
+          // always scroll if YOU sent message
+          setTimeout(scrollToBottom, 0);
+          return;
+        }
+        if (isBottomVisible()) {
+          setTimeout(scrollToBottom, 0);
+        } else {
+          setShowNewMessage(true);
+        }
 
       });
 
@@ -142,70 +173,82 @@ const ChatView = ({ currUser, selectedChat }) => {
 
   return (
 
-  <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0">
 
-    <GroupMembersManager selectedChat={selectedChat} />
+      <GroupMembersManager selectedChat={selectedChat} />
 
-    <div
-      ref={containerRef}
-      onScroll={handleScroll}
-      className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0"
-    >
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0"
+      >
 
-      {messages.map((msg) => {
+        {messages.map((msg) => {
 
-        const isMe = msg.senderName === currUser;
+          const isMe = msg.senderName === currUser;
 
-const isGroup = selectedChat?.isGroup;
-const showSender = isGroup && !isMe;
-        return (
-
-          <div
-            key={msg.messageId}
-            className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-          >
+          const isGroup = selectedChat?.isGroup;
+          const showSender = isGroup && !isMe;
+          return (
 
             <div
-              className={`max-w-[65%] px-3.5 py-2 rounded-2xl ${
-                isMe
+              key={msg.messageId}
+              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+            >
+
+              <div
+                className={`max-w-[65%] px-3.5 py-2 rounded-2xl ${isMe
                   ? "bg-gray-700 text-white"
                   : "bg-white text-gray-900"
-              }`}
-            >
- {showSender &&  (
-                <p className="text-xs opacity-70">
-                  {msg.senderName}
+                  }`}
+              >
+                {showSender && (
+                  <p className="text-xs opacity-70">
+                    {msg.senderName}
+                  </p>
+                )}
+                <p className="text-sm">
+                  {msg.content}
                 </p>
-              )}
-              <p className="text-sm">
-                {msg.content}
-              </p>
 
-              <div className="flex justify-end mt-1">
+                <div className="flex justify-end mt-1">
 
-                <span className="text-[10px] opacity-70">
-                  {formatTime(msg.sentAt)}
-                </span>
+                  <span className="text-[10px] opacity-70">
+                    {formatTime(msg.sentAt)}
+                  </span>
+
+                </div>
 
               </div>
 
             </div>
 
-          </div>
+          );
 
-        );
+        })}
 
-      })}
+        <div ref={bottomRef}></div>
 
-      <div ref={bottomRef}></div>
+      </div>
+      {showNewMessage && (
+        <div className="flex justify-center mb-2">
+          <button
+            onClick={() => {
+              scrollToBottom();
+              setShowNewMessage(false);
+            }}
+            className="bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow"
+          >
+            New Messages ↓
+          </button>
+        </div>
+      )}
+
+      <ChatMessageInput selectedChat={selectedChat} />
 
     </div>
 
-    <ChatMessageInput selectedChat={selectedChat} />
-
-  </div>
-
-);
+  );
 
 };
 

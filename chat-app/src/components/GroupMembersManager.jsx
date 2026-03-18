@@ -58,9 +58,10 @@ const GroupMembersManager = ({ selectedChat }) => {
 
       const token = localStorage.getItem("token");
 
-      await axios.post(
+     const response= await axios.post(
         `${ENV.api_url}/chats/${selectedChat.chatId}/members`,
         {
+         
           memberUserNames: [friend.chatName]
         },
         {
@@ -75,9 +76,9 @@ const GroupMembersManager = ({ selectedChat }) => {
       setSearch("");
       setResults([]);
 
-    } catch {
+    } catch(error) {
 
-      toast.error("Failed to add member");
+      toast.error(error.response?.data);
 
     }
 
@@ -123,19 +124,28 @@ const GroupMembersManager = ({ selectedChat }) => {
 
             ) : (
 
-              results.map((friend) => (
+             results.map((f) => (
+                  <div
+                    key={f.chatName}
+                    className="flex justify-between items-center px-3 py-2 border-b hover:bg-gray-50"
+                  >
+                    <p className="text-sm font-bold text-black">
+                      {f.chatName}
+                    </p>
 
-                <button
-                  key={friend.chatName}
-                  onClick={() => addMember(friend)}
-                  className="w-full text-left px-3 py-2 border-b hover:bg-gray-50"
-                >
-                  {friend.chatName}
-                </button>
+                    <button
+                      onClick={() => addMember(f)}
+                      className="text-xs bg-gray-900 text-white px-3 py-1 rounded"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ))
 
-              ))
 
-            )}
+              )
+            }
+            
 
           </div>
 

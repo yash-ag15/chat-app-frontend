@@ -173,7 +173,7 @@ if(res.status==200){
 
             ) : (
 
-              results.map((f) => (
+             
                 results.map((f) => (
                   <div
                     key={f.chatName}
@@ -193,9 +193,9 @@ if(res.status==200){
                 ))
 
 
-              ))
-
-            )}
+              )
+            }
+            
 
           </div>
 
