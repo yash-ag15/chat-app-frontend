@@ -9,6 +9,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ENV } from "../../../config.js";
+import { connectWebSocket, getStompClient } from "../services/webscoket";
+
 
 const Dashboard = () => {
     const [search, setSearch] = useState("");
@@ -75,39 +77,97 @@ const Dashboard = () => {
         loadChats();
     }, [loadChats]);
 
-useEffect(() => {
-    const searchTotalChats = async () => {
-      if(!search || search.trim() === ""){
-        loadChats();
-        return;
-      }
-        try {
-            const url = `${ENV.api_url}/friends/search?prefix=${search}`;
-            const token = localStorage.getItem("token");
-               const response = await axios.get(url, {
+    useEffect(() => {
+        const searchTotalChats = async () => {
+            if (!search || search.trim() === "") {
+                loadChats();
+                return;
+            }
+            try {
+                const url = `${ENV.api_url}/friends/search?prefix=${search}`;
+                const token = localStorage.getItem("token");
+                const response = await axios.get(url, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
                 setChats(response.data)
-        }
-        catch(error){
-            if (error.response?.status === 401) {
-                toast.error(error.response.data || "Session expired");
-                localStorage.removeItem("token");
-                navigate("/");
-            } else {
-                toast.error(error.response?.data || "Failed to search chats");
             }
-        }
-    };
-    searchTotalChats();
-}, [loadChats, navigate, search]);
+            catch (error) {
+                if (error.response?.status === 401) {
+                    toast.error(error.response.data || "Session expired");
+                    localStorage.removeItem("token");
+                    navigate("/");
+                } else {
+                    toast.error(error.response?.data || "Failed to search chats");
+                }
+            }
+        };
+        searchTotalChats();
+    }, [loadChats, navigate, search]);
 
 
     const handleUserUpdate = (updatedUser) => {
         setUser(updatedUser);
     };
+
+
+useEffect(() => {
+
+    let subscription;
+if (!user?.email) return;
+    connectWebSocket(() => {
+
+        const client = getStompClient();
+        if (!client) return;
+
+        subscription = client.subscribe(`/topic/chat-list/${user.email}`, (message) => {
+
+            console.log("EVENT RECEIVED:", message.body);
+
+            const data = JSON.parse(message.body);
+
+            setChats(prevChats => {
+
+                let exists = prevChats.some(chat => chat.chatId === data.chatId);
+
+                let updatedChats;
+
+                if (exists) {
+                    updatedChats = prevChats.map(chat =>
+                        chat.chatId === data.chatId
+                            ? {
+                                ...chat,
+                                lastMessage: data.lastMessage,
+                                lastMessageTime: data.lastMessageTime
+                              }
+                            : chat
+                    );
+                } else {
+                    updatedChats = [
+                        {
+                            chatId: data.chatId,
+                            lastMessage: data.lastMessage,
+                            lastMessageTime: data.lastMessageTime
+                        },
+                        ...prevChats
+                    ];
+                }
+
+                const updated = updatedChats.find(c => c.chatId === data.chatId);
+                const others = updatedChats.filter(c => c.chatId !== data.chatId);
+
+                return updated ? [updated, ...others] : updatedChats;
+            });
+        });
+    });
+
+    return () => {
+        subscription?.unsubscribe(); // ✅ now works correctly
+    };
+
+}, [user]);
+
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">

@@ -140,9 +140,9 @@ const ChatView = ({ currUser, selectedChat }) => {
 
     if (!selectedChat) return;
 
-    connectWebSocket(() => {
+   
 
-      subscribeToChat(selectedChat.chatId, (message) => {
+     const subscription = subscribeToChat(selectedChat.chatId, (message) => {
 
         setMessages(prev => {
 
@@ -167,7 +167,7 @@ const ChatView = ({ currUser, selectedChat }) => {
 
       });
 
-    });
+  return() => subscription?.unsubscribe();
 
   }, [selectedChat]);
 
