@@ -88,6 +88,12 @@ let stompClient = null;
 
 export const connectWebSocket = (onConnected) => {
 
+  if (stompClient?.connected) {
+    onConnected && onConnected();
+    return;
+  }
+
+
   const socket = new SockJS("http://localhost:8080/ws");
 
   stompClient = Stomp.over(socket);
@@ -97,12 +103,16 @@ export const connectWebSocket = (onConnected) => {
   stompClient.connect(
     { Authorization: "Bearer " + token },
     () => {
+
       console.log("WebSocket Connected");
-      onConnected();
+      window.stompClient = stompClient;
+
+      onConnected && onConnected();
     }
   );
 };
 
+export const getStompClient = () => stompClient;
 export const subscribeToChat = (chatId, callback) => {
 
   if (!stompClient) return;
