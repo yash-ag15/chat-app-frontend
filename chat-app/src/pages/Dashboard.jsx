@@ -112,20 +112,18 @@ const Dashboard = () => {
     };
 
 
-  useEffect(() => {
+useEffect(() => {
 
     let subscription;
-
+if (!user?.email) return;
     connectWebSocket(() => {
-
-        let subscription;
 
         const client = getStompClient();
         if (!client) return;
 
-        subscription = client.subscribe("/user/queue/chat-list", (message) => {
+        subscription = client.subscribe(`/topic/chat-list/${user.email}`, (message) => {
 
-            console.log(" EVENT RECEIVED:", message.body);
+            console.log("EVENT RECEIVED:", message.body);
 
             const data = JSON.parse(message.body);
 
@@ -165,10 +163,10 @@ const Dashboard = () => {
     });
 
     return () => {
-        subscription?.unsubscribe(); // ✅ NOW React controls it
+        subscription?.unsubscribe(); // ✅ now works correctly
     };
 
-}, []);
+}, [user]);
 
 
     return (

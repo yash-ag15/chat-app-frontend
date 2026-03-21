@@ -113,6 +113,7 @@ export const connectWebSocket = (onConnected) => {
 };
 
 export const getStompClient = () => stompClient;
+
 export const subscribeToChat = (chatId, callback) => {
 
   if (!stompClient) return;
