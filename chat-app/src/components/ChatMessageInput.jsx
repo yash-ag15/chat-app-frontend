@@ -50,18 +50,18 @@
 
 // export default ChatMessageInput;
 import { useState } from "react";
-import { sendMessageWS } from "../services/webscoket";
-
-const ChatMessageInput = ({ selectedChat }) => {
+import { sendMessageWS, sendTypingWS } from "../services/webscoket";
+import { useRef } from "react";
+const ChatMessageInput = ({ selectedChat, currUser }) => {
 
   const [text, setText] = useState("");
 
+const typingTimeoutRef = useRef(null);
   const sendMessage = () => {
 
-    // prevent empty message
+
     if (!text.trim()) return;
 
-    // make sure chat is selected
     if (!selectedChat?.chatId) return;
 
     const payload = {
@@ -73,6 +73,22 @@ const ChatMessageInput = ({ selectedChat }) => {
 
     setText("");
   };
+  const handleTyping = () => {
+    if (!selectedChat?.chatId) return;
+    const paylaod = {
+      chatId: selectedChat.chatId,
+      senderName: currUser,
+      isTyping: true
+
+    }
+    sendTypingWS(paylaod);
+
+    clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      sendTypingWS({ ...paylaod, isTyping: false });
+    },1000);
+  }
 
   return (
 
@@ -81,7 +97,12 @@ const ChatMessageInput = ({ selectedChat }) => {
       <input
         type="text"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => {
+
+          setText(e.target.value)
+          handleTyping();
+        }
+        }
         placeholder="Type a message"
         className="flex-1 px-4 py-2.5 rounded-full text-sm outline-none bg-gray-100"
         onKeyDown={(e) => {
@@ -89,6 +110,7 @@ const ChatMessageInput = ({ selectedChat }) => {
             sendMessage();
           }
         }}
+
       />
 
       <button

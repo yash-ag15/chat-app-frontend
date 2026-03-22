@@ -2,6 +2,7 @@ import { useState } from "react";
 import FriendRequests from "./FriendRequests.jsx";
 
 const Navbar = ({ title, subtitle, showBackButton, onBackClick, isChat }) => {
+  
   const [showRequests, setShowRequests] = useState(false);
 
   return (

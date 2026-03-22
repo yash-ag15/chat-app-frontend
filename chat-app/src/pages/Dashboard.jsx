@@ -112,62 +112,100 @@ const Dashboard = () => {
     };
 
 
-useEffect(() => {
+    useEffect(() => {
 
-    let subscription;
-if (!user?.email) return;
-    connectWebSocket(() => {
+        let subscription;
+        if (!user?.email) return;
+        connectWebSocket(() => {
 
-        const client = getStompClient();
-        if (!client) return;
+            const client = getStompClient();
+            if (!client) return;
 
-        subscription = client.subscribe(`/topic/chat-list/${user.email}`, (message) => {
+            subscription = client.subscribe(`/topic/chat-list/${user.email}`, (message) => {
 
-            console.log("EVENT RECEIVED:", message.body);
+                console.log("EVENT RECEIVED:", message.body);
 
-            const data = JSON.parse(message.body);
+                const data = JSON.parse(message.body);
 
-            setChats(prevChats => {
+                setChats(prevChats => {
 
-                let exists = prevChats.some(chat => chat.chatId === data.chatId);
+                    let exists = prevChats.some(chat => chat.chatId === data.chatId);
 
-                let updatedChats;
+                    let updatedChats;
 
-                if (exists) {
-                    updatedChats = prevChats.map(chat =>
-                        chat.chatId === data.chatId
-                            ? {
-                                ...chat,
+                    if (exists) {
+                        updatedChats = prevChats.map(chat =>
+                            chat.chatId === data.chatId
+                                ? {
+                                    ...chat,
+                                    lastMessage: data.lastMessage,
+                                    lastMessageTime: data.lastMessageTime
+                                }
+                                : chat
+                        );
+                    } else {
+                        updatedChats = [
+                            {
+                                chatId: data.chatId,
                                 lastMessage: data.lastMessage,
                                 lastMessageTime: data.lastMessageTime
-                              }
-                            : chat
-                    );
-                } else {
-                    updatedChats = [
-                        {
-                            chatId: data.chatId,
-                            lastMessage: data.lastMessage,
-                            lastMessageTime: data.lastMessageTime
-                        },
-                        ...prevChats
-                    ];
-                }
+                            },
+                            ...prevChats
+                        ];
+                    }
 
-                const updated = updatedChats.find(c => c.chatId === data.chatId);
-                const others = updatedChats.filter(c => c.chatId !== data.chatId);
+                    const updated = updatedChats.find(c => c.chatId === data.chatId);
+                    const others = updatedChats.filter(c => c.chatId !== data.chatId);
 
-                return updated ? [updated, ...others] : updatedChats;
+                    return updated ? [updated, ...others] : updatedChats;
+                });
             });
         });
-    });
 
-    return () => {
-        subscription?.unsubscribe(); // ✅ now works correctly
-    };
+        return () => {
+            subscription?.unsubscribe();
+        };
 
-}, [user]);
+    }, [user]);
 
+    useEffect(() => {
+        if (!user?.userName) return;
+
+        connectWebSocket(() => {
+            const client = getStompClient();
+            if (!client) return;
+
+            client.subscribe(
+                `/topic/initial-presence/${user.userName}`,
+                (msg) => {
+
+                    const onlineUsers = JSON.parse(msg.body);
+
+                 
+
+                    setChats(prev =>
+                        prev.map(chat => ({
+                            ...chat,
+                            online: onlineUsers.includes(chat.chatName)
+                        }))
+                    );
+                }
+            );
+
+            client.subscribe("/topic/presence", (msg) => {
+                const data = JSON.parse(msg.body);
+                setChats(prevChats => prevChats.map(chat => {
+                    if (chat.isGroup) return chat;
+                    if (chat.chatName !== data.userName) return chat;
+                    return {
+                        ...chat,
+                        online: data.online
+                    };
+                }))
+
+            })
+        })
+    }, [user]);
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
