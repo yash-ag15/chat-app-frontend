@@ -2,7 +2,8 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import ChatMessageInput from "./ChatMessageInput";
 import GroupMembersManager from "./GroupMembersManager";
-import { connectWebSocket, subscribeToChat } from "../services/webscoket";
+import { getStompClient, subscribeToChat } from "../services/webscoket";
+
 
 const formatTime = (time) => {
   if (!time) return "";
@@ -21,11 +22,14 @@ const ChatView = ({ currUser, selectedChat }) => {
   const [messages, setMessages] = useState([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [typingUser, setTypingUser] = useState(null);
 
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
   const shouldScrollOnLoadRef = useRef(false);
 
+
+  const typingTimeoutRef = useRef(null);
   const scrollToBottom = () => {
     const container = containerRef.current;
 
@@ -44,8 +48,8 @@ const ChatView = ({ currUser, selectedChat }) => {
 
     if (!container) return true;
 
-  return (container.scrollTop + container.clientHeight >=
-    container.scrollHeight - 100);
+    return (container.scrollTop + container.clientHeight >=
+      container.scrollHeight - 100);
   }
 
   const fetchMessages = async (pageNumber) => {
@@ -140,35 +144,50 @@ const ChatView = ({ currUser, selectedChat }) => {
 
     if (!selectedChat) return;
 
-   
 
-     const subscription = subscribeToChat(selectedChat.chatId, (message) => {
 
-        setMessages(prev => {
+    const subscription = subscribeToChat(selectedChat.chatId, (message) => {
 
-          const exists = prev.some(m => m.messageId === message.messageId);
-          if (exists) return prev;
+      setMessages(prev => {
 
-          return [...prev, message];
-        });
+        const exists = prev.some(m => m.messageId === message.messageId);
+        if (exists) return prev;
 
-        const isMe = message.senderName === currUser;
-
-        if (isMe) {
-          // always scroll if YOU sent message
-          setTimeout(scrollToBottom, 0);
-          return;
-        }
-        if (isBottomVisible()) {
-          setTimeout(scrollToBottom, 0);
-        } else {
-          setShowNewMessage(true);
-        }
-
+        return [...prev, message];
       });
 
-  return() => subscription?.unsubscribe();
+      const isMe = message.senderName === currUser;
 
+      if (isMe) {
+        // always scroll if YOU sent message
+        setTimeout(scrollToBottom, 0);
+        return;
+      }
+      if (isBottomVisible()) {
+        setTimeout(scrollToBottom, 0);
+      } else {
+        setShowNewMessage(true);
+      }
+
+    });
+
+    return () => subscription?.unsubscribe();
+
+  }, [selectedChat]);
+
+  useEffect(() => {
+    if (!selectedChat) return;
+
+    const client = getStompClient();
+    const subscription = client.subscribe(`/topic/typing/${selectedChat.chatId}`, (message) => {
+      const data = JSON.parse(message.body);
+      if (data.senderName === currUser) return;
+
+      setTypingUser(data.isTyping ? data.senderName : null);
+
+    });
+
+    return () => subscription?.unsubscribe();
   }, [selectedChat]);
 
   return (
@@ -244,7 +263,13 @@ const ChatView = ({ currUser, selectedChat }) => {
         </div>
       )}
 
-      <ChatMessageInput selectedChat={selectedChat} />
+      {typingUser && (
+        <div className="px-4 md:px-16 py-1 text-sm text-black bg-gray-200 rounded-full w-max mb-2">
+          {typingUser} is typing...
+        </div>
+      )}
+
+      <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
 
     </div>
 
