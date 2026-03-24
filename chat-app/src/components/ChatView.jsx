@@ -94,7 +94,6 @@ const ChatView = ({ currUser, selectedChat }) => {
 
   };
 
-  // load first messages
   useEffect(() => {
 
     if (!selectedChat) return;
@@ -160,11 +159,11 @@ const ChatView = ({ currUser, selectedChat }) => {
 
       if (isMe) {
         // always scroll if YOU sent message
-        setTimeout(scrollToBottom, 0);
+        setTimeout(scrollToBottom, 20);
         return;
       }
       if (isBottomVisible()) {
-        setTimeout(scrollToBottom, 0);
+        setTimeout(scrollToBottom, 20);
       } else {
         setShowNewMessage(true);
       }

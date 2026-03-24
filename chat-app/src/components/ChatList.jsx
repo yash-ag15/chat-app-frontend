@@ -9,7 +9,7 @@ const formatTime = (time) => {
         minute: "2-digit"
     });
 };
-const ChatList = ({ onSelectChat, selectedChatId,chats }) => {
+const ChatList = ({ onSelectChat, selectedChatId, chats }) => {
     return (
         <div className="flex-1 overflow-y-auto">
             <div className="p-2 space-y-0.5">
@@ -17,9 +17,8 @@ const ChatList = ({ onSelectChat, selectedChatId,chats }) => {
                     <button
                         key={chat.chatId}
                         onClick={() => onSelectChat?.(chat)}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                            selectedChatId === chat.chatId ? "bg-gray-100" : "hover:bg-gray-50"
-                        }`}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${selectedChatId === chat.chatId ? "bg-gray-100" : "hover:bg-gray-50"
+                            }`}
                     >
                         {/* Avatar */}
                         <div className="relative shrink-0">
@@ -40,13 +39,19 @@ const ChatList = ({ onSelectChat, selectedChatId,chats }) => {
                                     {chat.chatName}
                                 </h4>
                                 <span className="text-xs shrink-0 ml-2 text-gray-600">
-                                 {formatTime(chat.lastMessageTime)}
+                                    {formatTime(chat.lastMessageTime)}
                                 </span>
                             </div>
                             <div className="flex justify-between items-center mt-0.5">
                                 <p className="text-sm truncate text-gray-600">
                                     {chat.lastMessage}
                                 </p>
+
+                                {chat.unreadCount > 0 && (
+                                    <span className="ml-2 bg-black text-white text-xs px-2 py-0.5 rounded-full">
+                                        {chat.unreadCount}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </button>
