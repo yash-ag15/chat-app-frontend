@@ -60,3 +60,8 @@ export const sendTypingWS = (payload) => {
   stompClient.send("/app/chat.typing", {}, JSON.stringify(payload));
 
 };
+
+export const sendReadReceiptWS = (payload) => {
+  if(!stompClient) return;
+  stompClient.send("/app/chat.seen",{},JSON.stringify(payload));
+}

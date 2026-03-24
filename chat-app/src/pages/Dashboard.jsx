@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from "react";
 import Navbar from "../components/Navbar.jsx";
 import ChatList from "../components/ChatList.jsx";
@@ -31,7 +32,7 @@ const Dashboard = () => {
                 },
             });
 
-            setChats(response.data);
+            setChats(response.data.map(chat => ({ ...chat, unreadCount: 0 })));
         }
         catch (error) {
             if (error.response?.status === 401) {
@@ -130,7 +131,8 @@ const Dashboard = () => {
                 setChats(prevChats => {
 
                     let exists = prevChats.some(chat => chat.chatId === data.chatId);
-
+                    const isOpenChat = selectedChat?.chatId === data.chatId;
+                    const isMe = data.senderName == user.email;
                     let updatedChats;
 
                     if (exists) {
@@ -139,7 +141,8 @@ const Dashboard = () => {
                                 ? {
                                     ...chat,
                                     lastMessage: data.lastMessage,
-                                    lastMessageTime: data.lastMessageTime
+                                    lastMessageTime: data.lastMessageTime,
+                                    unreadCount: isMe ? 0 : (isOpenChat ? 0 : (chat.unreadCount || 0) + 1)
                                 }
                                 : chat
                         );
@@ -148,7 +151,8 @@ const Dashboard = () => {
                             {
                                 chatId: data.chatId,
                                 lastMessage: data.lastMessage,
-                                lastMessageTime: data.lastMessageTime
+                                lastMessageTime: data.lastMessageTime,
+                                unreadCount: 0
                             },
                             ...prevChats
                         ];
@@ -181,7 +185,7 @@ const Dashboard = () => {
 
                     const onlineUsers = JSON.parse(msg.body);
 
-                 
+
 
                     setChats(prev =>
                         prev.map(chat => ({
@@ -254,7 +258,18 @@ const Dashboard = () => {
                     />
 
                     <ChatList
-                        onSelectChat={(chat) => setSelectedChat(chat)}
+                        onSelectChat={(chat) => {
+                            setSelectedChat(chat);
+
+                       
+                            setChats(prev =>
+                                prev.map(c =>
+                                    c.chatId === chat.chatId
+                                        ? { ...c, unreadCount: 0 }
+                                        : c
+                                )
+                            );
+                        }}
                         selectedChatId={selectedChat?.chatId}
                         chats={chats}
                     />
