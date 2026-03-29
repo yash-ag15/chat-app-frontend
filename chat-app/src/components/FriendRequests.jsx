@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { ENV } from "../../../config.js";
 
 const FriendRequests = ({ onClose }) => {
   const [requests, setRequests] = useState([]);
@@ -13,7 +14,7 @@ const FriendRequests = ({ onClose }) => {
 
     const fetchAllRequest = async () => {
       try {
-        const url = "http://localhost:8080/friends/requests";
+        const url = `${ENV.api_url}/friends/requests`;
         const token = localStorage.getItem("token");
         const response = await axios.get(url,
 
@@ -42,7 +43,7 @@ const FriendRequests = ({ onClose }) => {
 
   const handleAccept = async (requestId, senderName) => {
     try {
-      const url = `http://localhost:8080/friends/request/accept/${requestId}`;
+      const url = `${ENV.api_url}/friends/request/accept/${requestId}`;
       const token = localStorage.getItem("token");
 
       const response = await axios.put(
@@ -74,7 +75,7 @@ const FriendRequests = ({ onClose }) => {
 
   const handleDecline = async (requestId, senderName) => {
     try {
-      const url = `http://localhost:8080/friends/request/reject/${requestId}`;
+      const url = `${ENV.api_url}/friends/request/reject/${requestId}`;
       const token = localStorage.getItem("token");
 
       const response = await axios.put(
@@ -106,7 +107,7 @@ const FriendRequests = ({ onClose }) => {
 
   const handleSendRequest = async () => {
     try {
-      const url = `http://localhost:8080/friends/requests/${searchUser}`;
+      const url = `${ENV.api_url}/friends/requests/${searchUser}`;
       const token = localStorage.getItem("token");
       const response = await axios.post(url,
         null,
