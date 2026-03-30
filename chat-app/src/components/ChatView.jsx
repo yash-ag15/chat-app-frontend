@@ -215,8 +215,8 @@ const ChatView = ({ currUser, selectedChat }) => {
             >
 
               <div
-                className={`max-w-[65%] px-3.5 py-2 rounded-2xl ${isMe
-                  ? "bg-gray-700 text-white"
+                className={`max-w-[65%] px-3 py-1.5 rounded-2xl ${isMe
+                  ? "bg-gray-700 text-white "
                   : "bg-white text-gray-900"
                   }`}
               >
@@ -225,9 +225,32 @@ const ChatView = ({ currUser, selectedChat }) => {
                     {msg.senderName}
                   </p>
                 )}
-                <p className="text-sm">
-                  {msg.content}
-                </p>
+
+
+                {msg.imageUrl ? (
+
+              
+                  <div className="flex flex-col gap-1">
+                    <img
+                      src={msg.imageUrl}
+                      className="rounded-lg max-h-60 object-cover"
+                    />
+
+                    {msg.content && (
+                      <p className="text-sm leading-tight">
+                        {msg.content}
+                      </p>
+                    )}
+                  </div>
+
+                ) : (
+
+                  
+                  <p className="text-sm leading-snug break-words">
+                    {msg.content}
+                  </p>
+
+                )}
 
                 <div className="flex justify-end mt-1">
 

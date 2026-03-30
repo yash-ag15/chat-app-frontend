@@ -53,6 +53,8 @@ const [showSaveBtn, setShowSaveBtn] = useState(false);
                 setPreview(null);
                 setIsEditingName(false);
                 setIsEditingAbout(false);
+                setShowSaveBtn(false);
+                 toast.success("Profile updated successfully");
                 // Notify parent component to refresh user data
                 if (onUserUpdate) {
                     onUserUpdate(response.data);

@@ -152,7 +152,7 @@ const Dashboard = () => {
                                 let updatedChats;
 
                                 if (exists) {
-                                
+
                                     updatedChats = prevChats.map(chat => {
 
                                         if (chat.chatId !== data.chatId) return chat;
@@ -165,7 +165,9 @@ const Dashboard = () => {
 
                                         return {
                                             ...chat,
-                                            lastMessage: data.lastMessage,
+                                            lastMessage: data.imageUrl
+                                                ? "📷 Photo"
+                                                : data.lastMessage,
                                             lastMessageTime: data.lastMessageTime,
 
                                             unreadCount: isMe
@@ -177,15 +179,17 @@ const Dashboard = () => {
                                     });
 
                                 } else {
-                                   
+
                                     const newChat = {
                                         chatId: data.chatId,
                                         chatName: data.sender || "User",
-                                        lastMessage: data.lastMessage,
+                                      lastMessage: data.imageUrl
+                                                ? "📷 Photo"
+                                                : data.lastMessage,
                                         lastMessageTime: data.lastMessageTime,
                                         unreadCount: 1,
 
-                                       
+
                                         isGroup: false,
                                         online: false
                                     };
@@ -297,17 +301,17 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-300">
                         <button onClick={() => setShowProfile(true)}>
                             <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300">
-                              { user?.profilePhotoUrl ? (
-                            <img
-                                src={ user.profilePhotoUrl}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-sm font-medium text-gray-700">
-                                { user?.userName?.charAt(0)}
-                            </span>
-                        )}
-                                
+                                {user?.profilePhotoUrl ? (
+                                    <img
+                                        src={user.profilePhotoUrl}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-sm font-medium text-gray-700">
+                                        {user?.userName?.charAt(0)}
+                                    </span>
+                                )}
+
                             </div>
                         </button>
                         <input
