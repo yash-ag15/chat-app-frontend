@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar.jsx";
 import ChatList from "../components/ChatList.jsx";
 import ChatView from "../components/ChatView.jsx";
@@ -20,6 +20,11 @@ const Dashboard = () => {
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [showProfile, setShowProfile] = useState(false);
+    const selectedChatRef = useRef(null);
+
+    useEffect(() => {
+        selectedChatRef.current = selectedChat;
+    }, [selectedChat]);
 
     const loadChats = useCallback(async () => {
         try {
@@ -92,7 +97,12 @@ const Dashboard = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setChats(response.data)
+                setChats(
+                    response.data.map(chat => ({
+                        ...chat,
+                        unreadCount: 0
+                    }))
+                );
             }
             catch (error) {
                 if (error.response?.status === 401) {
@@ -116,54 +126,96 @@ const Dashboard = () => {
     useEffect(() => {
 
         let subscription;
+
         if (!user?.email) return;
+
         connectWebSocket(() => {
 
             const client = getStompClient();
-            if (!client) return;
 
-            subscription = client.subscribe(`/topic/chat-list/${user.email}`, (message) => {
 
-                console.log("EVENT RECEIVED:", message.body);
+            const waitForConnection = () => {
+                if (client && client.connected) {
 
-                const data = JSON.parse(message.body);
+                    subscription = client.subscribe(
+                        `/topic/chat-list/${user.email}`,
+                        (message) => {
 
-                setChats(prevChats => {
+                            const data = JSON.parse(message.body);
 
-                    let exists = prevChats.some(chat => chat.chatId === data.chatId);
-                    const isOpenChat = selectedChat?.chatId === data.chatId;
-                    const isMe = data.senderName == user.email;
-                    let updatedChats;
+                            setChats(prevChats => {
 
-                    if (exists) {
-                        updatedChats = prevChats.map(chat =>
-                            chat.chatId === data.chatId
-                                ? {
-                                    ...chat,
-                                    lastMessage: data.lastMessage,
-                                    lastMessageTime: data.lastMessageTime,
-                                    unreadCount: isMe ? 0 : (isOpenChat ? 0 : (chat.unreadCount || 0) + 1)
+                                const exists = prevChats.some(
+                                    chat => chat.chatId === data.chatId
+                                );
+
+                                let updatedChats;
+
+                                if (exists) {
+
+                                    updatedChats = prevChats.map(chat => {
+
+                                        if (chat.chatId !== data.chatId) return chat;
+
+                                        const isOpenChat =
+                                            selectedChatRef.current?.chatId === data.chatId;
+
+                                        const isMe =
+                                            data.senderName === user.email;
+
+                                        return {
+                                            ...chat,
+                                            lastMessage: data.imageUrl
+                                                ? "📷 Photo"
+                                                : data.lastMessage,
+                                            lastMessageTime: data.lastMessageTime,
+
+                                            unreadCount: isMe
+                                                ? 0
+                                                : isOpenChat
+                                                    ? 0
+                                                    : (chat.unreadCount || 0) + 1
+                                        };
+                                    });
+
+                                } else {
+
+                                    const newChat = {
+                                        chatId: data.chatId,
+                                        chatName: data.sender || "User",
+                                      lastMessage: data.imageUrl
+                                                ? "📷 Photo"
+                                                : data.lastMessage,
+                                        lastMessageTime: data.lastMessageTime,
+                                        unreadCount: 1,
+
+
+                                        isGroup: false,
+                                        online: false
+                                    };
+
+                                    updatedChats = [newChat, ...prevChats];
                                 }
-                                : chat
-                        );
-                    } else {
-                        updatedChats = [
-                            {
-                                chatId: data.chatId,
-                                lastMessage: data.lastMessage,
-                                lastMessageTime: data.lastMessageTime,
-                                unreadCount: 0
-                            },
-                            ...prevChats
-                        ];
-                    }
 
-                    const updated = updatedChats.find(c => c.chatId === data.chatId);
-                    const others = updatedChats.filter(c => c.chatId !== data.chatId);
+                                const updated = updatedChats.find(
+                                    c => c.chatId === data.chatId
+                                );
+                                const others = updatedChats.filter(
+                                    c => c.chatId !== data.chatId
+                                );
 
-                    return updated ? [updated, ...others] : updatedChats;
-                });
-            });
+                                return updated ? [updated, ...others] : updatedChats;
+                            });
+                        }
+                    );
+
+                } else {
+
+                    setTimeout(waitForConnection, 100);
+                }
+            };
+
+            waitForConnection();
         });
 
         return () => {
@@ -173,42 +225,58 @@ const Dashboard = () => {
     }, [user]);
 
     useEffect(() => {
+
         if (!user?.userName) return;
 
-        connectWebSocket(() => {
-            const client = getStompClient();
-            if (!client) return;
+        const client = getStompClient();
 
-            client.subscribe(
-                `/topic/initial-presence/${user.userName}`,
-                (msg) => {
+        let sub1, sub2;
 
-                    const onlineUsers = JSON.parse(msg.body);
+        const wait = () => {
+            if (client && client.connected) {
 
+                sub1 = client.subscribe(
+                    `/topic/initial-presence/${user.userName}`,
+                    (msg) => {
+                        const onlineUsers = JSON.parse(msg.body);
 
+                        setChats(prev =>
+                            prev.map(chat => ({
+                                ...chat,
+                                online: onlineUsers.includes(chat.chatName)
+                            }))
+                        );
+                    }
+                );
+
+                sub2 = client.subscribe("/topic/presence", (msg) => {
+                    const data = JSON.parse(msg.body);
 
                     setChats(prev =>
-                        prev.map(chat => ({
-                            ...chat,
-                            online: onlineUsers.includes(chat.chatName)
-                        }))
+                        prev.map(chat => {
+                            if (chat.isGroup) return chat;
+                            if (chat.chatName !== data.userName) return chat;
+
+                            return {
+                                ...chat,
+                                online: data.online
+                            };
+                        })
                     );
-                }
-            );
+                });
 
-            client.subscribe("/topic/presence", (msg) => {
-                const data = JSON.parse(msg.body);
-                setChats(prevChats => prevChats.map(chat => {
-                    if (chat.isGroup) return chat;
-                    if (chat.chatName !== data.userName) return chat;
-                    return {
-                        ...chat,
-                        online: data.online
-                    };
-                }))
+            } else {
+                setTimeout(wait, 100);
+            }
+        };
 
-            })
-        })
+        wait();
+
+        return () => {
+            sub1?.unsubscribe();
+            sub2?.unsubscribe();
+        };
+
     }, [user]);
 
     return (
@@ -233,7 +301,17 @@ const Dashboard = () => {
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-300">
                         <button onClick={() => setShowProfile(true)}>
                             <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300">
-                                <span className="font-medium text-sm text-gray-700">  {user?.userName?.charAt(0)}</span>
+                                {user?.profilePhotoUrl ? (
+                                    <img
+                                        src={user.profilePhotoUrl}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-sm font-medium text-gray-700">
+                                        {user?.userName?.charAt(0)}
+                                    </span>
+                                )}
+
                             </div>
                         </button>
                         <input
@@ -261,7 +339,7 @@ const Dashboard = () => {
                         onSelectChat={(chat) => {
                             setSelectedChat(chat);
 
-                       
+
                             setChats(prev =>
                                 prev.map(c =>
                                     c.chatId === chat.chatId

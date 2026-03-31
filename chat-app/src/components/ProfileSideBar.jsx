@@ -2,21 +2,44 @@ import axios from "axios";
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { ENV } from "../../../config";
 const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingAbout, setIsEditingAbout] = useState(false);
     const [editUsername, setEditUsername] = useState(user?.userName ?? "");
     const [editAbout, setEditAbout] = useState(user?.about || "Hey there! I'm using ChatHub");
-const navigate =useNavigate()
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [preview, setPreview] = useState(null);
+const [showSaveBtn, setShowSaveBtn] = useState(false);
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreview(URL.createObjectURL(file));
+             setShowSaveBtn(true);
+        }
+    }
+    const navigate = useNavigate()
     const handleSaveProfile = async () => {
+
+
         try {
             const token = localStorage.getItem("token");
+
+            const formData = new FormData();
+            formData.append("user", new Blob([JSON.stringify({
+                userName: editUsername,
+                about: editAbout,
+            })],
+                { type: "application/json" }));
+
+            if (selectedFile) {
+                formData.append("file", selectedFile);
+            }
+
             const response = await axios.put(
-                "http://localhost:8080/api/users/me",
-                {
-                    userName: editUsername,
-                    about: editAbout,
-                },
+                `${ENV.api_url}/api/users/me`,
+                formData,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -26,8 +49,12 @@ const navigate =useNavigate()
 
             // Update local state with response
             if (response.data) {
+                setSelectedFile(null);
+                setPreview(null);
                 setIsEditingName(false);
                 setIsEditingAbout(false);
+                setShowSaveBtn(false);
+                 toast.success("Profile updated successfully");
                 // Notify parent component to refresh user data
                 if (onUserUpdate) {
                     onUserUpdate(response.data);
@@ -61,9 +88,33 @@ const navigate =useNavigate()
                 {/* Avatar */}
                 <div className="flex justify-center py-8">
                     <div className="w-36 h-36 rounded-full flex items-center justify-center bg-gray-200">
-                        <span className="text-5xl font-light text-gray-600">{editUsername?.charAt(0) || user?.userName?.charAt(0)}</span>
+
+                        {preview || user?.profilePhotoUrl ? (
+                            <img
+                                src={preview || user.profilePhotoUrl}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <span className="text-5xl font-light text-gray-600">
+                                {editUsername?.charAt(0) || user?.userName?.charAt(0)}
+                            </span>
+                        )}
+
+ 
                     </div>
+
+
+                  
                 </div>
+
+              <div className="flex justify-center mb-2">
+                <label className=" hover:underline cursor-pointer text-sm text-black font-medium">
+                    Edit Photo
+                     <input type="file" accept="image/*" className="hidden"  onChange={handleFileChange} />
+                </label>
+              </div>
+
+
 
                 {/* Name */}
                 <div className="mx-4 rounded-xl p-4 mb-2 bg-gray-50">
@@ -128,6 +179,17 @@ const navigate =useNavigate()
                         </button>
                     </div>
                 </div>
+
+                {showSaveBtn && (
+                    <div className="mt-6 mx-4">
+                        <button
+                            onClick={handleSaveProfile}
+                            className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 bg-gray-900 text-white hover:bg-gray-800"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
