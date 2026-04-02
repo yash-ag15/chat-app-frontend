@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import ChatMessageInput from "./ChatMessageInput";
 import GroupMembersManager from "./GroupMembersManager";
 import { connectWebSocket, subscribeToChat } from "../services/webscoket";
+import { ENV } from "../../../config.js";
 
 const formatTime = (time) => {
   if (!time) return "";
@@ -45,7 +46,7 @@ const ChatView = ({ currUser, selectedChat }) => {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        `http://localhost:8080/messages/${selectedChat.chatId}?page=${pageNumber}&size=20`,
+        `${ENV.api_url}/messages/${selectedChat.chatId}?page=${pageNumber}&size=20`,
         {
           headers: {
             Authorization: `Bearer ${token}`

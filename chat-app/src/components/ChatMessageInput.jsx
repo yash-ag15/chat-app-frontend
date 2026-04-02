@@ -54,12 +54,14 @@ import { sendMessageWS, sendTypingWS } from "../services/webscoket";
 import { useRef } from "react";
 import axios from "axios";
 import { ENV } from "../../../config.js";
+import EmojiPicker from "emoji-picker-react";
 const ChatMessageInput = ({ selectedChat, currUser }) => {
 
   const [text, setText] = useState("");
   const [preview, setPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-
+  const [isUploading, setIsUploading] = useState(false);
+  const [showEmoji, setShowEmoji] = useState(false);
 
   const typingTimeoutRef = useRef(null);
 
@@ -75,39 +77,53 @@ const ChatMessageInput = ({ selectedChat, currUser }) => {
     setSelectedFile(null);
     setPreview(null);
   };
-  const sendMessage = async() => {
+  const sendMessage = async () => {
 
-    if (!text.trim() && !selectedFile) return;
-
+    if ((!text.trim() && !selectedFile) || isUploading) return;
     if (!selectedChat?.chatId) return;
 
     const token = localStorage.getItem("token");
 
-    let imageUrl = null;
+    try {
+      setIsUploading(true); //setting upload statte true
 
-    if (selectedFile) {
-      // Upload image to server and get the URL
-      const formdata = new FormData();
-      formdata.append("file", selectedFile);
-      const response = await axios.post(`${ENV.api_url}/upload/message-image`, formdata, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
-      imageUrl = response.data;
+      let imageUrl = null;
+
+      if (selectedFile) {
+        const formdata = new FormData();
+        formdata.append("file", selectedFile);
+
+        const response = await axios.post(
+          `${ENV.api_url}/upload/message-image`,
+          formdata,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+
+        imageUrl = response.data;
+      }
+
+      const payload = {
+        chatId: selectedChat.chatId,
+        content: text.trim(),
+        imageUrl: imageUrl
+      };
+
+      sendMessageWS(payload);
+
+      // reset
+      setText("");
+      setSelectedFile(null);
+      setPreview(null);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
     }
-    const payload = {
-      chatId: selectedChat.chatId,
-      content: text.trim(),
-      imageUrl: imageUrl
-
-    };
-
-    sendMessageWS(payload);
-
-    setText("");
-    setSelectedFile(null);
-    setPreview(null);
   };
   const handleTyping = () => {
     if (!selectedChat?.chatId) return;
@@ -128,11 +144,24 @@ const ChatMessageInput = ({ selectedChat, currUser }) => {
 
   return (
 
-    <div className="relative">
+    <div className="relative ">
+
+      {showEmoji && (
+      <div
+        className="absolute bottom-16 left-3 z-50"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EmojiPicker
+          onEmojiClick={(emojiData) => {
+            setText(prev => prev + emojiData.emoji);
+          }}
+        />
+      </div>
+    )}
 
       {/*  IMAGE PREVIEW */}
       {preview && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-gray-100">
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-gray-100">
           <img
             src={preview}
             className="w-16 h-16 object-cover rounded"
@@ -142,8 +171,14 @@ const ChatMessageInput = ({ selectedChat, currUser }) => {
             onClick={removeImage}
             className="text-red-500 text-sm"
           >
-            ❌
+            Remove
           </button>
+        </div>
+      )}
+
+      {isUploading && (
+        <div className="px-3 py-1 text-xs text-gray-500">
+          Uploading image...
         </div>
       )}
 
@@ -151,15 +186,23 @@ const ChatMessageInput = ({ selectedChat, currUser }) => {
       <div className="px-3 py-2.5 flex items-center gap-2 bg-white border-t border-gray-200">
 
         {/* ➕ FILE BUTTON */}
-        <label className="cursor-pointer text-xl px-2">
+        <label className="cursor-pointer text-xl font-bold px-2">
           +
           <input
             type="file"
             accept="image/*"
             onChange={handleFileChange}
             className="hidden"
+            disabled={isUploading}
           />
         </label>
+
+        <button
+          onClick={() => setShowEmoji(prev => !prev)}
+          className="text-xl px-2"
+        >
+          😊
+        </button>
 
         {/* INPUT */}
         <input
@@ -176,14 +219,23 @@ const ChatMessageInput = ({ selectedChat, currUser }) => {
           }}
         />
 
+
         {/* SEND */}
         <button
           onClick={sendMessage}
-          className="p-2.5 rounded-full bg-gray-900 text-white hover:bg-gray-800"
+          disabled={isUploading}
+          className={`p-2.5 rounded-full text-white ${isUploading
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-gray-900 hover:bg-gray-800"
+            }`}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
+          {isUploading ? (
+            <span className="text-xs">...</span>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          )}
         </button>
 
       </div>

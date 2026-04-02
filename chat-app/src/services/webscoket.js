@@ -1,6 +1,7 @@
 
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
+import { ENV } from "../../../config.js";
 
 let stompClient = null;
 
@@ -12,7 +13,7 @@ export const connectWebSocket = (onConnected) => {
   }
 
 
-  const socket = new SockJS("http://localhost:8080/ws");
+  const socket = new SockJS(`${ENV.api_url}/ws`);
 
   stompClient = Stomp.over(socket);
 

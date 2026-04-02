@@ -2,8 +2,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { ENV } from "../../../config.js";
 const Register = () => {
-    const url = "http://localhost:8080/auth/register";
+    const url = `${ENV.api_url}/auth/register`;
 
     const navigate = useNavigate();
     const [email, setEmail] = useState("");

@@ -2,9 +2,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { ENV } from "../../../config.js";
 
 const Login = () => {
-    const url = "http://localhost:8080/auth/login";
+    const url = `${ENV.api_url}/auth/login`;
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");

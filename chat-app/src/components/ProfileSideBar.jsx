@@ -10,13 +10,13 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     const [editAbout, setEditAbout] = useState(user?.about || "Hey there! I'm using ChatHub");
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState(null);
-const [showSaveBtn, setShowSaveBtn] = useState(false);
+    const [showSaveBtn, setShowSaveBtn] = useState(false);
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
             setPreview(URL.createObjectURL(file));
-             setShowSaveBtn(true);
+            setShowSaveBtn(true);
         }
     }
     const navigate = useNavigate()
@@ -54,7 +54,7 @@ const [showSaveBtn, setShowSaveBtn] = useState(false);
                 setIsEditingName(false);
                 setIsEditingAbout(false);
                 setShowSaveBtn(false);
-                 toast.success("Profile updated successfully");
+                toast.success("Profile updated successfully");
                 // Notify parent component to refresh user data
                 if (onUserUpdate) {
                     onUserUpdate(response.data);
@@ -100,19 +100,19 @@ const [showSaveBtn, setShowSaveBtn] = useState(false);
                             </span>
                         )}
 
- 
+
                     </div>
 
 
-                  
+
                 </div>
 
-              <div className="flex justify-center mb-2">
-                <label className=" hover:underline cursor-pointer text-sm text-black font-medium">
-                    Edit Photo
-                     <input type="file" accept="image/*" className="hidden"  onChange={handleFileChange} />
-                </label>
-              </div>
+                <div className="flex justify-center mb-2">
+                    <label className=" hover:underline cursor-pointer text-sm text-black font-medium">
+                        Edit Photo
+                        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                    </label>
+                </div>
 
 
 
