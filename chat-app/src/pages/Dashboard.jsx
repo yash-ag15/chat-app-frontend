@@ -362,10 +362,12 @@ const Dashboard = () => {
                         <>
                             <Navbar
                                 title={selectedChat.chatName}
+                                profilePhotoUrl={selectedChat.profilePhotoUrl}
                                 subtitle={selectedChat.online ? "online" : "last seen recently"}
                                 showBackButton={true}
                                 onBackClick={() => setSelectedChat(null)}
                                 isChat={true}
+                                selectedChat={selectedChat}
                             />
                             <ChatView currUser={user.userName} selectedChat={selectedChat} />
                         </>
