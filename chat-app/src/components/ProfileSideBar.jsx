@@ -19,6 +19,13 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
             setShowSaveBtn(true);
         }
     }
+
+    const handleCancelImage = () => {
+    setSelectedFile(null);
+    setPreview(null);
+    setShowSaveBtn(false);
+};
+
     const navigate = useNavigate()
     const handleSaveProfile = async () => {
 
@@ -181,13 +188,22 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
                 </div>
 
                 {showSaveBtn && (
-                    <div className="mt-6 mx-4">
+                    <div className="mt-6 mx-4 flex gap-2">
+
                         <button
                             onClick={handleSaveProfile}
-                            className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 bg-gray-900 text-white hover:bg-gray-800"
+                            className="flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 bg-gray-900 text-white hover:bg-gray-800"
                         >
                             Save Changes
                         </button>
+
+                        <button
+                            onClick={handleCancelImage}
+                            className="flex-1 px-3 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        >
+                            Cancel
+                        </button>
+
                     </div>
                 )}
             </div>

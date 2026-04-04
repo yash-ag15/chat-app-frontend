@@ -26,7 +26,7 @@ const ChatList = ({ onSelectChat, selectedChatId, chats }) => {
                                 { chat.profilePhotoUrl ? (
                             <img
                                 src={ chat.profilePhotoUrl}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full rounded-full object-cover"
                             />
                         ) : (
                             <span className="text-sm font-medium text-gray-700">

@@ -2,7 +2,7 @@ import { useState } from "react";
 import FriendRequests from "./FriendRequests.jsx";
 import axios from "axios";
 import { ENV } from "../../../config.js";
-
+import ProfileModal from "./ProfileModal.jsx";
 
 const Navbar = ({ title, profilePhotoUrl, subtitle, showBackButton, onBackClick, isChat, selectedChat }) => {
 
@@ -123,96 +123,14 @@ const Navbar = ({ title, profilePhotoUrl, subtitle, showBackButton, onBackClick,
       {/* Friend Requests Dropdown */}
       {showRequests && <FriendRequests onClose={() => setShowRequests(false)} />}
 
-      {showProfile && (
-        <div
-          className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
-          onClick={() => setShowProfile(false)}
-        >
-
-          <div
-            className="bg-white rounded-xl p-6 w-[320px] max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-
-            {loadingState ? (
-              <p className="text-center text-sm">Loading...</p>
-            ) : (
-
-              <>
-                {/*  USER PROFILE */}
-                {profileType === "USER" && profileData && (
-                  <div className="text-center">
-                    {/* <img
-                      src={profileData.profilePhotoUrl}
-                      className="w-20 h-20 rounded-full mx-auto mb-3"
-                    /> */}
-
-                    {profileData.profilePhotoUrl ? (
-                      <img
-                        src={profileData.profilePhotoUrl}
-                        className="w-20 h-20 mx-auto mb-3 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gray-300 flex items-center justify-center">
-                        <span className="text-2xl font-semibold text-gray-700">
-                          {profileData.userName?.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <h2 className="font-semibold text-lg">
-                      {profileData.userName}
-                    </h2>
-                    <p className="text-sm text-gray-500">
-                      {profileData.about || "No status"}
-                    </p>
-                  </div>
-                )}
-
-                {/*  GROUP PROFILE */}
-                {profileType === "GROUP" && profileData && (
-                  <div>
-                    <div className="text-center text-3xl mb-2">👥</div>
-
-                    <h2 className="text-center font-semibold text-lg">
-                      {profileData.chatName}
-                    </h2>
-
-                    <p className="text-center text-sm text-gray-500">
-                      {profileData.memberCount} members
-                    </p>
-
-                    <div className="mt-3 space-y-2">
-                      {profileData.members.map((m) => (
-                        <div key={m.id} className="flex items-center gap-2">
-                          {m.profilePhotoUrl ? (
-                            <img
-                              src={m.profilePhotoUrl}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                              <span className="text-xs font-semibold text-gray-700">
-                                {m.username?.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-sm">{m.username}</p>
-                            <p className="text-xs text-gray-500">
-                              {m.about}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-          </div>
-        </div>
-      )}
+      <ProfileModal
+  showProfile={showProfile}
+  setShowProfile={setShowProfile}
+  loadingState={loadingState}
+  profileData={profileData}
+  profileType={profileType}
+  setProfileData={setProfileData}
+/>
     </header>
   );
 };
