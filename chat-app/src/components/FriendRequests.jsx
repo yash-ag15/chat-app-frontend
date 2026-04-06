@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ENV } from "../../../config.js";
 
@@ -8,7 +7,6 @@ const FriendRequests = ({ onClose }) => {
   const [requests, setRequests] = useState([]);
   const [searchUser, setSearchUser] = useState("");
   const [sentRequests, setSentRequests] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
 
@@ -27,11 +25,7 @@ const FriendRequests = ({ onClose }) => {
         setRequests(response.data)
       }
       catch (error) {
-        if (error.response?.status === 401) {
-          toast.error(error.response.data || "Session expired");
-          localStorage.removeItem("token");
-          navigate("/");
-        } else {
+        if (error.response?.status !== 401) {
           console.error("Error fetching friend requests:", error);
           toast.error("Failed to load friend requests");
         }
@@ -63,11 +57,7 @@ const FriendRequests = ({ onClose }) => {
       }
 
     } catch (error) {
-      if (error.response?.status === 401) {
-        toast.error(error.response.data || "Session expired");
-        localStorage.removeItem("token");
-        navigate("/");
-      } else {
+      if (error.response?.status !== 401) {
         toast.error(error.response.data || "Failed to accept request");
       }
     }
@@ -95,11 +85,7 @@ const FriendRequests = ({ onClose }) => {
       }
 
     } catch (error) {
-      if (error.response?.status === 401) {
-        toast.error(error.response.data || "Session expired");
-        localStorage.removeItem("token");
-        navigate("/");
-      } else {
+      if (error.response?.status !== 401) {
         toast.error(error.response.data || "Failed to decline request");
       }
     }
@@ -127,11 +113,7 @@ const FriendRequests = ({ onClose }) => {
       }
     }
     catch (error) {
-      if (error.response?.status === 401) {
-        toast.error(error.response.data || "Session expired");
-        localStorage.removeItem("token");
-        navigate("/");
-      } else {
+      if (error.response?.status !== 401) {
         toast.error(error.response.data || "Failed to send request");
       }
     }

@@ -7,7 +7,6 @@ import ChatPlaceholder from "../components/ChatPlaceholder.jsx";
 import ProfileSidebar from "../components/ProfileSideBar.jsx";
 import GroupChatCreator from "../components/GroupChatCreator.jsx";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ENV } from "../../../config.js";
 import { connectWebSocket, getStompClient } from "../services/webscoket";
@@ -15,7 +14,6 @@ import { connectWebSocket, getStompClient } from "../services/webscoket";
 
 const Dashboard = () => {
     const [search, setSearch] = useState("");
-    const navigate = useNavigate();
     const [user, setUser] = useState({});
     const [chats, setChats] = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
@@ -40,15 +38,11 @@ const Dashboard = () => {
             setChats(response.data.map(chat => ({ ...chat, unreadCount: 0 })));
         }
         catch (error) {
-            if (error.response?.status === 401) {
-                toast.error(error.response.data || "Session expired");
-                localStorage.removeItem("token");
-                navigate("/");
-            } else {
+            if (error.response?.status !== 401) {
                 toast.error(error.response?.data || "Failed to load chats");
             }
         }
-    }, [navigate]);
+    }, []);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -65,11 +59,7 @@ const Dashboard = () => {
                 setUser(response.data);
 
             } catch (error) {
-                if (error.response?.status === 401) {
-                    toast.error(error.response.data || "Session expired");
-                    localStorage.removeItem("token");
-                    navigate("/");
-                } else {
+                if (error.response?.status !== 401) {
                     console.error("Error fetching user:", error);
                     toast.error("Failed to load user data");
                 }
@@ -77,7 +67,7 @@ const Dashboard = () => {
         };
 
         fetchUser();
-    }, [navigate]);
+    }, []);
 
     useEffect(() => {
         loadChats();
@@ -105,17 +95,13 @@ const Dashboard = () => {
                 );
             }
             catch (error) {
-                if (error.response?.status === 401) {
-                    toast.error(error.response.data || "Session expired");
-                    localStorage.removeItem("token");
-                    navigate("/");
-                } else {
+                if (error.response?.status !== 401) {
                     toast.error(error.response?.data || "Failed to search chats");
                 }
             }
         };
         searchTotalChats();
-    }, [loadChats, navigate, search]);
+    }, [loadChats, search]);
 
 
     const handleUserUpdate = (updatedUser) => {
@@ -298,7 +284,7 @@ const Dashboard = () => {
                     <Navbar title="ChatHub" isChat={false} />
 
                     {/* Search row */}
-                    <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-300">
+                    <div className="flex items-center gap-3 px-4 py-3 border-b  border-gray-300">
                         <button onClick={() => setShowProfile(true)}>
                             <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300">
                                 {user?.profilePhotoUrl ? (

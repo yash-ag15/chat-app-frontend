@@ -27,12 +27,7 @@ const Register = () => {
             }
         } catch (error) {
             console.error("Registration error:", error);
-            if (error.response?.status === 401) {
-                toast.error(error.response.data || "Session expired");
-                localStorage.removeItem("token");
-            } else {
-                toast.error("User already registered with same email");
-            }
+            toast.error(error.response?.data || "User already registered with same email");
         }
     }
     return (
