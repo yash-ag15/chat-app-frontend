@@ -11,8 +11,10 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState(null);
     const [showSaveBtn, setShowSaveBtn] = useState(false);
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
 
     const handleFileChange = (e) => {
+        if (isSavingProfile) return;
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
@@ -22,6 +24,7 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     };
 
     const handleCancelImage = () => {
+        if (isSavingProfile) return;
         setSelectedFile(null);
         setPreview(null);
         setShowSaveBtn(false);
@@ -34,6 +37,8 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
     };
 
     const handleSaveProfile = async () => {
+        if (isSavingProfile) return;
+        setIsSavingProfile(true);
         try {
             const token = localStorage.getItem("token");
             const formData = new FormData();
@@ -61,6 +66,8 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
             }
         } catch (error) {
             toast.error("Failed to update profile");
+        } finally {
+            setIsSavingProfile(false);
         }
     };
 
@@ -68,7 +75,11 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
         <div className="absolute inset-0 z-50 flex flex-col bg-white animate-in slide-in-from-left duration-200">
             {/* Header */}
             <div className="h-16 flex items-center gap-6 px-6 border-b border-gray-100 bg-white flex-shrink-0">
-                <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 text-gray-700 transition-colors">
+                <button
+                    onClick={onClose}
+                    disabled={isSavingProfile}
+                    className="p-2 rounded-full hover:bg-gray-100 text-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
@@ -87,9 +98,19 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
                                 {editUsername?.charAt(0).toUpperCase()}
                             </span>
                         )}
-                        <label className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
-                            <span className="text-white text-xs font-bold bg-black/40 px-3 py-1 rounded-full">CHANGE PHOTO</span>
-                            <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                        <label
+                            className={`absolute inset-0 bg-black/20 flex items-center justify-center transition-opacity ${isSavingProfile ? "opacity-100 cursor-not-allowed" : "opacity-0 group-hover:opacity-100 cursor-pointer"}`}
+                        >
+                            <span className="text-white text-xs font-bold bg-black/40 px-3 py-1 rounded-full">
+                                {isSavingProfile ? "UPLOADING..." : "CHANGE PHOTO"}
+                            </span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleFileChange}
+                                disabled={isSavingProfile}
+                            />
                         </label>
                     </div>
                 </div>
@@ -121,7 +142,8 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
                             {/* The Icon Button */}
                             <button
                                 onClick={() => isEditingName ? handleSaveProfile() : setIsEditingName(true)}
-                                className="text-gray-400 hover:text-blue-600 flex-shrink-0 p-1 rounded-full hover:bg-gray-50 transition-all"
+                                disabled={isSavingProfile}
+                                className="text-gray-400 hover:text-blue-600 flex-shrink-0 p-1 rounded-full hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -153,7 +175,8 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
 
                             <button
                                 onClick={() => isEditingAbout ? handleSaveProfile() : setIsEditingAbout(true)}
-                                className="text-gray-400 hover:text-blue-600 flex-shrink-0 p-1 rounded-full hover:bg-gray-50 transition-all"
+                                disabled={isSavingProfile}
+                                className="text-gray-400 hover:text-blue-600 flex-shrink-0 p-1 rounded-full hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -164,15 +187,28 @@ const ProfileSidebar = ({ onClose, user, onUserUpdate }) => {
 
                     {showSaveBtn && (
                         <div className="flex gap-2 animate-in fade-in slide-in-from-top-2">
-                            <button onClick={handleSaveProfile} className="flex-1 bg-gray-900 text-white py-3 rounded-2xl text-sm font-bold shadow-md hover:bg-black transition-all">Save Changes</button>
-                            <button onClick={handleCancelImage} className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-2xl text-sm font-bold hover:bg-gray-200">Cancel</button>
+                            <button
+                                onClick={handleSaveProfile}
+                                disabled={isSavingProfile}
+                                className="flex-1 bg-gray-900 text-white py-3 rounded-2xl text-sm font-bold shadow-md hover:bg-black transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {isSavingProfile ? "Saving..." : "Save Changes"}
+                            </button>
+                            <button
+                                onClick={handleCancelImage}
+                                disabled={isSavingProfile}
+                                className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-2xl text-sm font-bold hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     )}
 
                     <div className="pt-4">
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center justify-center gap-2 text-red-500 font-bold py-4 px-4 rounded-[2rem] border border-red-50 bg-[#fffafa] hover:bg-red-50 transition-colors shadow-sm"
+                            disabled={isSavingProfile}
+                            className="w-full flex items-center justify-center gap-2 text-red-500 font-bold py-4 px-4 rounded-[2rem] border border-red-50 bg-[#fffafa] hover:bg-red-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                             Logout
