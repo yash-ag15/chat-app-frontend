@@ -23,6 +23,7 @@ const Register = () => {
             const data = response.data;
 
             if (data === "User Successfully registered") {
+                toast.success(data);
                 navigate("/");
             }
         } catch (error) {
