@@ -361,7 +361,7 @@ const Dashboard = () => {
                             <Navbar
                                 title={selectedChat.chatName}
                                 profilePhotoUrl={selectedChat.profilePhotoUrl}
-                                subtitle={selectedChat.online ? "online" : "last seen recently"}
+                               subtitle={selectedChat.online && !selectedChat.isGroup ? "online" : "last seen recently"}
                                 showBackButton={true}
                                 onBackClick={() => setSelectedChat(null)}
                                 isChat={true}
