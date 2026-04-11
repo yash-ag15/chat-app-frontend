@@ -11,6 +11,7 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const onLoginSubmit = async (e) => {
         e.preventDefault();
@@ -19,6 +20,8 @@ const Login = () => {
             toast.warning("Email and password required");
             return;
         }
+        if (loading) return;
+        setLoading(true);
 
         try {
             const response = await axios.post(url, { email, password });
@@ -34,6 +37,8 @@ const Login = () => {
         } catch (error) {
             console.error(error);
             toast.error("Login failed. Please check your credentials.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -109,11 +114,12 @@ const Login = () => {
             </div>
 
             <button
+                disabled={loading}
                 type="submit"
                 className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium
                    hover:bg-gray-800 transition mt-6"
             >
-                Login
+                {loading ? "Logging in..." : "Login"}
             </button>
         </form>
     );

@@ -19,7 +19,7 @@ const Register = () => {
             toast.warning("Please Fill All the Details");
             return;
         }
-        if(setLoading)return;
+        if (loading) return;
         setLoading(true);
         try {
             const response = await axios.post(url,
