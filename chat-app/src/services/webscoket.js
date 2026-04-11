@@ -13,7 +13,8 @@ export const connectWebSocket = (onConnected) => {
   }
 
 
-  const socket = new SockJS(`${ENV.api_url}/ws`);
+ const socket = new SockJS("https://chat-app-1-mdrl.onrender.com/ws");
+
 
   stompClient = Stomp.over(socket);
 
