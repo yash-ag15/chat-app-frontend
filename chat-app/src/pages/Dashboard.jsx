@@ -311,7 +311,7 @@ const Dashboard = () => {
     return (
         <div
             style={{ height: "var(--app-height)" }}
-            className="flex flex-col bg-gray-50"
+            className="flex flex-col bg-gray-50  overflow-hidden"
         >
             <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl bg-white shadow-lg">
 

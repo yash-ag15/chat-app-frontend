@@ -48,6 +48,14 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+  document.body.style.overflow = "hidden";
+
+  return () => {
+    document.body.style.overflow = "auto";
+  };
+}, []);
+
   return (
     <div className='bg-red-400'>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
