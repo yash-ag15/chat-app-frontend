@@ -17,20 +17,35 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const App = () => {
+
+  useEffect(() => {
+    const setAppHeight = () => {
+      document.documentElement.style.setProperty(
+        "--app-height",
+        `${window.innerHeight}px`
+      );
+    };
+
+    setAppHeight();
+    window.addEventListener("resize", setAppHeight);
+
+    return () => window.removeEventListener("resize", setAppHeight);
+  }, []);
+
   return (
     <div className='bg-red-400'>
-    <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-    <Routes>
-      <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
-      <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
- 
- 
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+      <Routes>
+        <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
+        <Route path="/auth" element={<PublicRoute><Auth /></PublicRoute>} />
 
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/dashboard/chat/:chatId" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
-     
-    </Routes>
+
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/chat/:chatId" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+
+      </Routes>
     </div>
   )
 }

@@ -309,7 +309,10 @@ const Dashboard = () => {
 
 
     return (
-        <div className="h-[100dvh] flex flex-col bg-gray-50">
+        <div
+            style={{ height: "var(--app-height)" }}
+            className="flex flex-col bg-gray-50"
+        >
             <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl bg-white shadow-lg">
 
                 {showProfile && (
@@ -390,7 +393,7 @@ const Dashboard = () => {
                             <Navbar
                                 title={selectedChat.chatName}
                                 profilePhotoUrl={selectedChat.profilePhotoUrl}
-                               subtitle={ !selectedChat.isGroup ? selectedChat.online ? "online" : "last seen recently" : ""}
+                                subtitle={!selectedChat.isGroup ? selectedChat.online ? "online" : "last seen recently" : ""}
                                 showBackButton={true}
                                 onBackClick={() => navigate("/dashboard")}
                                 isChat={true}
