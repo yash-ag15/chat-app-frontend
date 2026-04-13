@@ -33,6 +33,16 @@ const ChatView = ({ currUser, selectedChat }) => {
 
 
   const typingTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      scrollToBottom();
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const scrollToBottom = () => {
     const container = containerRef.current;
 
@@ -201,7 +211,7 @@ const ChatView = ({ currUser, selectedChat }) => {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0"
+        className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0 pb-24"
       >
 
         {messages.map((msg) => {
@@ -294,8 +304,10 @@ const ChatView = ({ currUser, selectedChat }) => {
           {typingUser} is typing...
         </div>
       )}
+      <div className="sticky bottom-0 z-10 bg-white border-t">
+        <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
+      </div>
 
-      <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
       {imagePreview && (
         <div
           className="fixed inset-0 bg-white z-50 flex items-center justify-center"

@@ -309,7 +309,7 @@ const Dashboard = () => {
 
 
     return (
-        <div className="h-screen flex flex-col bg-gray-50">
+        <div className="h-[100dvh] flex flex-col bg-gray-50">
             <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl bg-white shadow-lg">
 
                 {showProfile && (
