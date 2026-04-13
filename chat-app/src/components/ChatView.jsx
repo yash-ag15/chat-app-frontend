@@ -24,7 +24,8 @@ const ChatView = ({ currUser, selectedChat }) => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [typingUser, setTypingUser] = useState(null);
-  
+  const [imagePreview, setImagePreview] = useState(null);
+
 
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
@@ -231,10 +232,11 @@ const ChatView = ({ currUser, selectedChat }) => {
 
                 {msg.imageUrl ? (
 
-              
+
                   <div className="flex flex-col gap-1">
                     <img
                       src={msg.imageUrl}
+                      onClick={() => setImagePreview(msg.imageUrl)}
                       className="rounded-lg max-h-60 object-cover"
                     />
 
@@ -247,7 +249,7 @@ const ChatView = ({ currUser, selectedChat }) => {
 
                 ) : (
 
-                  
+
                   <p className="text-sm leading-snug break-words">
                     {msg.content}
                   </p>
@@ -294,8 +296,29 @@ const ChatView = ({ currUser, selectedChat }) => {
       )}
 
       <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
+      {imagePreview && (
+        <div
+          className="fixed inset-0 bg-white z-50 flex items-center justify-center"
+          onClick={() => setImagePreview(null)}
+        >
+          {/* Close Button */}
+          <button
+            className="absolute top-4 right-4 text-black text-2xl z-50"
+            onClick={() => setImagePreview(null)}
+          >
+            ✕
+          </button>
 
+          {/* Image */}
+          <img
+            src={imagePreview}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
+
 
   );
 
