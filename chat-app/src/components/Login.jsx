@@ -32,7 +32,7 @@ const Login = () => {
             } else {
                 toast.success("Login successful!");
                 localStorage.setItem("token", data); // JWT string
-                navigate("/dashboard");
+                navigate("/dashboard", { replace: true });
             }
         } catch (error) {
             console.error(error);

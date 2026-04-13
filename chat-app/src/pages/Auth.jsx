@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import Login from "../components/Login";
 import Register from "../components/Register";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 const Auth = () => {
     const location = useLocation();
     const [isLogin, setIsLogin] = useState(true);
+    const token = localStorage.getItem("token");
 
     useEffect(() => {
         if (location.state?.mode === "register") {
@@ -14,6 +15,10 @@ const Auth = () => {
             setIsLogin(true);
         }
     }, [location.state]);
+
+    if (token) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     return (
         <div className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
