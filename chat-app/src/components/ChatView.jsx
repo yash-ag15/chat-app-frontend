@@ -216,137 +216,113 @@ const ChatView = ({ currUser, selectedChat }) => {
     return () => subscription?.unsubscribe();
   }, [selectedChat]);
 
-  return (
+ return (
+  <div className="relative flex flex-col h-full min-h-0 overflow-hidden">
 
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+    <GroupMembersManager selectedChat={selectedChat} />
 
-      <GroupMembersManager selectedChat={selectedChat} />
+    {/* SCROLL AREA */}
+    <div
+      ref={containerRef}
+      onScroll={handleScroll}
+      className="flex-1 overflow-y-auto min-h-0 h-0 px-4 md:px-16 py-4 pb-18 space-y-1.5 bg-gray-50"
+    >
+      {messages.map((msg) => {
+        const isMe = msg.senderName === currUser;
+        const isGroup = selectedChat?.isGroup;
+        const showSender = isGroup && !isMe;
 
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0 pb-28"
-      >
-
-        {messages.map((msg) => {
-
-          const isMe = msg.senderName === currUser;
-
-          const isGroup = selectedChat?.isGroup;
-          const showSender = isGroup && !isMe;
-          return (
-
+        return (
+          <div
+            key={msg.messageId}
+            className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+          >
             <div
-              key={msg.messageId}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+              className={`max-w-[65%] px-3 py-1.5 rounded-2xl ${
+                isMe ? "bg-gray-700 text-white" : "bg-white text-gray-900"
+              }`}
             >
+              {showSender && (
+                <p className="text-xs opacity-70">{msg.senderName}</p>
+              )}
 
-              <div
-                className={`max-w-[65%] px-3 py-1.5 rounded-2xl ${isMe
-                  ? "bg-gray-700 text-white "
-                  : "bg-white text-gray-900"
-                  }`}
-              >
-                {showSender && (
-                  <p className="text-xs opacity-70">
-                    {msg.senderName}
-                  </p>
-                )}
-
-
-                {msg.imageUrl ? (
-
-
-                  <div className="flex flex-col gap-1">
-                    <img
-                      src={msg.imageUrl}
-                      onClick={() => setImagePreview(msg.imageUrl)}
-                      className="rounded-lg max-h-60 object-cover"
-                    />
-
-                    {msg.content && (
-                      <p className="text-sm leading-tight">
-                        {msg.content}
-                      </p>
-                    )}
-                  </div>
-
-                ) : (
-
-
-                  <p className="text-sm leading-snug break-words">
-                    {msg.content}
-                  </p>
-
-                )}
-
-                <div className="flex justify-end mt-1">
-
-                  <span className="text-[10px] opacity-70">
-                    {formatTime(msg.sentAt)}
-                  </span>
-
+              {msg.imageUrl ? (
+                <div className="flex flex-col gap-1">
+                  <img
+                    src={msg.imageUrl}
+                    onClick={() => setImagePreview(msg.imageUrl)}
+                    className="rounded-lg max-h-60 object-cover"
+                  />
+                  {msg.content && (
+                    <p className="text-sm">{msg.content}</p>
+                  )}
                 </div>
+              ) : (
+                <p className="text-sm break-words">{msg.content}</p>
+              )}
 
+              <div className="flex justify-end mt-1">
+                <span className="text-[10px] opacity-70">
+                  {formatTime(msg.sentAt)}
+                </span>
               </div>
-
             </div>
+          </div>
+        );
+      })}
 
-          );
-
-        })}
-
-        <div ref={bottomRef}></div>
-
-      </div>
-      {showNewMessage && (
-        <div className="flex justify-center mb-2">
-          <button
-            onClick={() => {
-              scrollToBottom();
-              setShowNewMessage(false);
-            }}
-            className="bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow"
-          >
-            New Messages ↓
-          </button>
-        </div>
-      )}
-
-      {typingUser && (
-        <div className="px-4 md:px-16 py-1 text-sm text-black bg-gray-200 rounded-full w-max mb-2">
-          {typingUser} is typing...
-        </div>
-      )}
-      <div className="sticky bottom-0 z-10 bg-white border-t pb-safe">
-        <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
-      </div>
-
-      {imagePreview && (
-        <div
-          className="fixed inset-0 bg-white z-50 flex items-center justify-center"
-          onClick={() => setImagePreview(null)}
-        >
-          {/* Close Button */}
-          <button
-            className="absolute top-4 right-4 text-black text-2xl z-50"
-            onClick={() => setImagePreview(null)}
-          >
-            ✕
-          </button>
-
-          {/* Image */}
-          <img
-            src={imagePreview}
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
+      <div ref={bottomRef}></div>
     </div>
 
+    {/* NEW MESSAGE BUTTON */}
+    {showNewMessage && (
+      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20">
+        <button
+          onClick={() => {
+            scrollToBottom();
+            setShowNewMessage(false);
+          }}
+          className="bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow"
+        >
+          New Messages ↓
+        </button>
+      </div>
+    )}
 
-  );
+    {/* TYPING */}
+    {typingUser && (
+      <div className="absolute bottom-20 left-4 z-10 text-sm bg-gray-200 px-3 py-1 rounded-full">
+        {typingUser} is typing...
+      </div>
+    )}
+
+    {/* INPUT (FIXED) */}
+    <div className="absolute bottom-0 left-0 right-0 z-10 bg-white border-t">
+      <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
+    </div>
+
+    {/* IMAGE PREVIEW */}
+    {imagePreview && (
+      <div
+        className="fixed inset-0 bg-white z-50 flex items-center justify-center"
+        onClick={() => setImagePreview(null)}
+      >
+        <button
+          className="absolute top-4 right-4 text-black text-2xl"
+          onClick={() => setImagePreview(null)}
+        >
+          ✕
+        </button>
+
+        <img
+          src={imagePreview}
+          className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )}
+  </div>
+);
 
 };
 
