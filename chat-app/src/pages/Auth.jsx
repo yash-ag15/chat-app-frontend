@@ -21,9 +21,11 @@ const Auth = () => {
 
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-gray-700 font-semibold text-2xl">CH</span>
-                    </div>
+                    <img
+                        src="/chatlogo.jpg"
+                        alt="ChatHub logo"
+                        className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
+                    />
 
                     <h1 className="text-2xl font-semibold text-gray-900">
                         ChatHub
