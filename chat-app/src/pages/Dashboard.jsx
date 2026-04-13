@@ -385,7 +385,7 @@ const Dashboard = () => {
                 </div>
 
                 <div
-                    className={`flex-1 flex flex-col ${selectedChat ? "flex" : "hidden md:flex"
+                    className={`flex-1 flex flex-col min-h-0 overflow-hidden  ${selectedChat ? "flex" : "hidden md:flex"
                         } ${showProfile ? "hidden md:flex" : ""}`}
                 >
                     {selectedChat ? (

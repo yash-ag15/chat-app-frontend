@@ -146,51 +146,72 @@ const ChatView = ({ currUser, selectedChat }) => {
 
   // websocket messages
   useEffect(() => {
-
     if (!selectedChat) return;
 
+    let subscription;
 
+    const waitForConnection = () => {
+      const client = getStompClient();
 
-    const subscription = subscribeToChat(selectedChat.chatId, (message) => {
+      if (client && client.connected) {
+        subscription = client.subscribe(
+          `/topic/chat/${selectedChat.chatId}`,
+          (msg) => {
+            const message = JSON.parse(msg.body);
 
-      setMessages(prev => {
+            setMessages(prev => {
+              const exists = prev.some(m => m.messageId === message.messageId);
+              if (exists) return prev;
+              return [...prev, message];
+            });
 
-        const exists = prev.some(m => m.messageId === message.messageId);
-        if (exists) return prev;
+            const isMe = message.senderName === currUser;
 
-        return [...prev, message];
-      });
+            if (isMe) {
+              setTimeout(scrollToBottom, 20);
+              return;
+            }
 
-      const isMe = message.senderName === currUser;
-
-      if (isMe) {
-        // always scroll if YOU sent message
-        setTimeout(scrollToBottom, 20);
-        return;
-      }
-      if (isBottomVisible()) {
-        setTimeout(scrollToBottom, 20);
+            if (isBottomVisible()) {
+              setTimeout(scrollToBottom, 20);
+            } else {
+              setShowNewMessage(true);
+            }
+          }
+        );
       } else {
-        setShowNewMessage(true);
+        setTimeout(waitForConnection, 100);
       }
+    };
 
-    });
+    waitForConnection();
 
     return () => subscription?.unsubscribe();
-
   }, [selectedChat]);
-
   useEffect(() => {
     if (!selectedChat) return;
 
-    const client = getStompClient();
-    const subscription = client.subscribe(`/topic/typing/${selectedChat.chatId}`, (message) => {
-      const data = JSON.parse(message.body);
-      if (data.senderName === currUser) return;
+    let subscription;
 
-      setTypingUser(data.isTyping ? data.senderName : null);
+    const waitForConnection = () => {
+      const client = getStompClient();
 
-    });
+      if (client && client.connected) {
+        subscription = client.subscribe(
+          `/topic/typing/${selectedChat.chatId}`,
+          (message) => {
+            const data = JSON.parse(message.body);
+            if (data.senderName === currUser) return;
+
+            setTypingUser(data.isTyping ? data.senderName : null);
+          }
+        );
+      } else {
+        setTimeout(waitForConnection, 100);
+      }
+    };
+
+    waitForConnection();
 
     return () => subscription?.unsubscribe();
   }, [selectedChat]);
@@ -204,7 +225,7 @@ const ChatView = ({ currUser, selectedChat }) => {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0 pb-24"
+        className="flex-1 overflow-y-auto px-4 md:px-16 py-4 space-y-1.5 bg-gray-50 min-h-0 pb-28"
       >
 
         {messages.map((msg) => {
@@ -297,7 +318,7 @@ const ChatView = ({ currUser, selectedChat }) => {
           {typingUser} is typing...
         </div>
       )}
-      <div className="sticky bottom-0 z-10 bg-white border-t">
+      <div className="sticky bottom-0 z-10 bg-white border-t pb-safe">
         <ChatMessageInput selectedChat={selectedChat} currUser={currUser} />
       </div>
 
