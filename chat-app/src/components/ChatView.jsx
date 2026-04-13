@@ -34,14 +34,7 @@ const ChatView = ({ currUser, selectedChat }) => {
 
   const typingTimeoutRef = useRef(null);
 
-  useEffect(() => {
-    const handleResize = () => {
-      scrollToBottom();
-    };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const scrollToBottom = () => {
     const container = containerRef.current;

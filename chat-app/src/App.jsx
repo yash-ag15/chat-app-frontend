@@ -21,16 +21,31 @@ const App = () => {
 
   useEffect(() => {
     const setAppHeight = () => {
+      const height = window.visualViewport
+        ? window.visualViewport.height
+        : window.innerHeight;
+
       document.documentElement.style.setProperty(
         "--app-height",
-        `${window.innerHeight}px`
+        `${height}px`
       );
     };
 
     setAppHeight();
-    window.addEventListener("resize", setAppHeight);
 
-    return () => window.removeEventListener("resize", setAppHeight);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", setAppHeight);
+    } else {
+      window.addEventListener("resize", setAppHeight);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", setAppHeight);
+      } else {
+        window.removeEventListener("resize", setAppHeight);
+      }
+    };
   }, []);
 
   return (
