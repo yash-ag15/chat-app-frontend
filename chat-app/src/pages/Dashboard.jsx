@@ -7,10 +7,13 @@ import ProfileSidebar from "../components/ProfileSideBar.jsx";
 import GroupChatCreator from "../components/GroupChatCreator.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate, useParams } from "react-router-dom";
 import { ENV } from "../../../config.js";
 import { connectWebSocket, getStompClient } from "../services/webscoket";
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    const { chatId } = useParams();
     const [search, setSearch] = useState("");
     const [user, setUser] = useState({});
     const [chats, setChats] = useState([]);
@@ -278,6 +281,32 @@ const Dashboard = () => {
         }
     }, [chats, selectedChat]);
 
+    useEffect(() => {
+        if (!chatId) {
+            setSelectedChat(null);
+            return;
+        }
+
+        if (!chats.length) return;
+
+        const matchedChat = chats.find(chat => String(chat.chatId) === String(chatId));
+        if (!matchedChat) return;
+
+        if (selectedChat?.chatId !== matchedChat.chatId) {
+            setSelectedChat(matchedChat);
+        }
+
+        if (matchedChat.unreadCount) {
+            setChats(prev =>
+                prev.map(chat =>
+                    String(chat.chatId) === String(chatId)
+                        ? { ...chat, unreadCount: 0 }
+                        : chat
+                )
+            );
+        }
+    }, [chatId, chats, selectedChat]);
+
 
     return (
         <div className="h-screen flex flex-col bg-gray-50">
@@ -330,14 +359,14 @@ const Dashboard = () => {
                         onGroupCreated={(newGroupChat) => {
                             loadChats();
                             if (newGroupChat?.chatId) {
-                                setSelectedChat(newGroupChat);
+                                navigate(`/dashboard/chat/${newGroupChat.chatId}`);
                             }
                         }}
                     />
 
                     <ChatList
                         onSelectChat={(chat) => {
-                            setSelectedChat(chat);
+                            navigate(`/dashboard/chat/${chat.chatId}`);
 
                             setChats(prev =>
                                 prev.map(c =>
@@ -363,7 +392,7 @@ const Dashboard = () => {
                                 profilePhotoUrl={selectedChat.profilePhotoUrl}
                                subtitle={ !selectedChat.isGroup ? selectedChat.online ? "online" : "last seen recently" : ""}
                                 showBackButton={true}
-                                onBackClick={() => setSelectedChat(null)}
+                                onBackClick={() => navigate("/dashboard")}
                                 isChat={true}
                                 selectedChat={selectedChat}
                             />
