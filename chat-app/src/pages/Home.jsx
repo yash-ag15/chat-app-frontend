@@ -8,8 +8,12 @@ const Home = () => {
       <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-10 text-center">
 
         {/* Logo */}
-        <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-6">
-          <span className="text-gray-700 text-3xl font-semibold">CH</span>
+        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-6">
+          <img
+            src="/chatlogo.jpg"
+            alt="ChatHub logo"
+            className="w-16 h-16 rounded-full object-cover mx-auto "
+          />
         </div>
 
         <h1 className="text-3xl font-semibold text-gray-900">
