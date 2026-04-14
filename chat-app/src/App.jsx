@@ -19,42 +19,23 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => {
 
-  useEffect(() => {
-    const setAppHeight = () => {
-      const height = window.visualViewport
-        ? window.visualViewport.height
-        : window.innerHeight;
-
-      document.documentElement.style.setProperty(
-        "--app-height",
-        `${height}px`
-      );
-    };
-
-    setAppHeight();
-
+useEffect(() => {
+  const handleVisualViewportResize = () => {
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", setAppHeight);
-    } else {
-      window.addEventListener("resize", setAppHeight);
+   
+      const currentHeight = window.visualViewport.height;
+      document.documentElement.style.setProperty("--app-height", `${currentHeight}px`);
+      
+    
+      window.scrollTo(0, 0);
     }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", setAppHeight);
-      } else {
-        window.removeEventListener("resize", setAppHeight);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-  document.body.style.overflow = "hidden";
-
-  return () => {
-    document.body.style.overflow = "auto";
   };
+
+  window.visualViewport?.addEventListener("resize", handleVisualViewportResize);
+  return () => window.visualViewport?.removeEventListener("resize", handleVisualViewportResize);
 }, []);
+
+
 
   return (
     <div className='bg-red-400'>

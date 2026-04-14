@@ -308,106 +308,92 @@ const Dashboard = () => {
     }, [chatId, chats, selectedChat]);
 
 
-    return (
-        <div
-            style={{ height: "var(--app-height)" }}
-            className="flex flex-col bg-gray-50  overflow-hidden"
-        >
-            <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl bg-white shadow-lg">
+  return (
+  <div style={{ height: "var(--app-height, 100dvh)" }} className="flex flex-col bg-gray-50 overflow-hidden">
+    <div className="relative flex-1 flex max-w-7xl w-full mx-auto my-0 md:my-5 overflow-hidden md:rounded-2xl bg-white shadow-lg">
 
-                {showProfile && (
-                    <div className="absolute inset-0 z-20 md:relative md:w-[420px] md:border-r md:border-gray-200">
-                        <ProfileSidebar
-                            user={user}
-                            onClose={() => setShowProfile(false)}
-                            onUserUpdate={handleUserUpdate}
-                        />
-                    </div>
-                )}
-
-                <div
-                    className={`w-full md:w-[420px] flex flex-col border-r border-gray-200 ${selectedChat ? "hidden md:flex" : "flex"
-                        } ${showProfile ? "hidden" : ""}`}
-                >
-                    <Navbar title="ChatHub" isChat={false} />
-
-                    <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-300">
-                        <button onClick={() => setShowProfile(true)}>
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300">
-                                {user?.profilePhotoUrl ? (
-                                    <img
-                                        src={user.profilePhotoUrl}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <span className="text-sm font-medium text-gray-700">
-                                        {user?.userName?.charAt(0)}
-                                    </span>
-                                )}
-                            </div>
-                        </button>
-
-                        <input
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                            }}
-                            type="text"
-                            placeholder="Search or start new chat"
-                            className="flex-1 px-4 py-2 rounded-xl text-sm outline-none transition-shadow duration-200 bg-gray-100 text-gray-900 border border-transparent focus:ring-2 focus:ring-gray-300"
-                        />
-                    </div>
-
-                    <GroupChatCreator
-                        onGroupCreated={(newGroupChat) => {
-                            loadChats();
-                            if (newGroupChat?.chatId) {
-                                navigate(`/dashboard/chat/${newGroupChat.chatId}`);
-                            }
-                        }}
-                    />
-
-                    <ChatList
-                        onSelectChat={(chat) => {
-                            navigate(`/dashboard/chat/${chat.chatId}`);
-
-                            setChats(prev =>
-                                prev.map(c =>
-                                    c.chatId === chat.chatId
-                                        ? { ...c, unreadCount: 0 }
-                                        : c
-                                )
-                            );
-                        }}
-                        selectedChatId={selectedChat?.chatId}
-                        chats={chats}
-                    />
-                </div>
-
-                <div
-                    className={`flex-1 flex flex-col min-h-0 overflow-hidden  ${selectedChat ? "flex" : "hidden md:flex"
-                        } ${showProfile ? "hidden md:flex" : ""}`}
-                >
-                    {selectedChat ? (
-                        <>
-                            <Navbar
-                                title={selectedChat.chatName}
-                                profilePhotoUrl={selectedChat.profilePhotoUrl}
-                                subtitle={!selectedChat.isGroup ? selectedChat.online ? "online" : "last seen recently" : ""}
-                                showBackButton={true}
-                                onBackClick={() => navigate("/dashboard")}
-                                isChat={true}
-                                selectedChat={selectedChat}
-                            />
-                            <ChatView currUser={user.userName} selectedChat={selectedChat} />
-                        </>
-                    ) : (
-                        <ChatPlaceholder />
-                    )}
-                </div>
-            </div>
+      {/* Profile Sidebar */}
+      {showProfile && (
+        <div className="absolute inset-0 z-20 md:relative md:w-[420px] md:border-r md:border-gray-200">
+          <ProfileSidebar
+            user={user}
+            onClose={() => setShowProfile(false)}
+            onUserUpdate={handleUserUpdate}
+          />
         </div>
-    );
+      )}
+
+      {/* Chat List Column */}
+      <div
+        className={`w-full md:w-[420px] flex flex-col border-r border-gray-200 ${
+          selectedChat ? "hidden md:flex" : "flex"
+        } ${showProfile ? "hidden" : ""}`}
+      >
+        <Navbar title="ChatHub" isChat={false} />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-300">
+          <button onClick={() => setShowProfile(true)}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-300 overflow-hidden">
+              {user?.profilePhotoUrl ? (
+                <img src={user.profilePhotoUrl} className="w-full h-full object-cover" alt="profile" />
+              ) : (
+                <span className="text-sm font-medium text-gray-700">{user?.userName?.charAt(0)}</span>
+              )}
+            </div>
+          </button>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            type="text"
+            placeholder="Search or start new chat"
+            className="flex-1 px-4 py-2 rounded-xl text-sm outline-none bg-gray-100 text-gray-900 border border-transparent focus:ring-2 focus:ring-gray-300"
+          />
+        </div>
+        <GroupChatCreator
+          onGroupCreated={(newGroupChat) => {
+            loadChats();
+            if (newGroupChat?.chatId) navigate(`/dashboard/chat/${newGroupChat.chatId}`);
+          }}
+        />
+        <ChatList
+          onSelectChat={(chat) => {
+            navigate(`/dashboard/chat/${chat.chatId}`);
+            setChats(prev => prev.map(c => c.chatId === chat.chatId ? { ...c, unreadCount: 0 } : c));
+          }}
+          selectedChatId={selectedChat?.chatId}
+          chats={chats}
+        />
+      </div>
+
+      {/* Main Chat View Area */}
+      <div
+        className={`flex-1 flex flex-col min-h-0 overflow-hidden ${
+          selectedChat ? "flex" : "hidden md:flex"
+        } ${showProfile ? "hidden md:flex" : ""}`}
+      >
+        {selectedChat ? (
+          /* Proper Flex container for ChatView */
+          <div className="flex flex-col h-full min-h-0 w-full">
+            <Navbar
+              title={selectedChat.chatName}
+              profilePhotoUrl={selectedChat.profilePhotoUrl}
+              subtitle={!selectedChat.isGroup ? (selectedChat.online ? "online" : "last seen recently") : ""}
+              showBackButton={true}
+              onBackClick={() => navigate("/dashboard")}
+              isChat={true}
+              selectedChat={selectedChat}
+            />
+            <ChatView currUser={user.userName} selectedChat={selectedChat} />
+          </div>
+        ) : (
+          /* Placeholder container */
+          <div className="flex flex-col h-full w-full">
+            <ChatPlaceholder />
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+);
 };
 
 export default Dashboard;
