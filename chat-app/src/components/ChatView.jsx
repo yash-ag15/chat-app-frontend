@@ -239,8 +239,8 @@ useEffect(() => {
 
       {/* IMAGE PREVIEW MODAL */}
       {imagePreview && (
-        <div className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center p-4" onClick={() => setImagePreview(null)}>
-          <button className="absolute top-6 right-6 text-white text-3xl hover:scale-110 transition-transform">&times;</button>
+        <div className="fixed inset-0 bg-white z-[100] flex items-center justify-center p-4" onClick={() => setImagePreview(null)}>
+          <button className="absolute top-6 right-6 text-black text-3xl hover:scale-110 transition-transform">&times;</button>
           <img src={imagePreview} alt="full-size" className="max-h-full max-w-full object-contain rounded-sm" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
